@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Framework Analysis - W3Schools Template Study</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>Template Analysis</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="framework-analysis.html" class="nav-link active">Framework Analysis</a></li>
+                <li><a href="responsive-design.html" class="nav-link">Responsive Design</a></li>
+                <li><a href="references.html" class="nav-link">References</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header framework-header">
+        <div class="container">
+            <h1>CSS Framework Architecture Analysis</h1>
+            <p class="page-subtitle">Deep dive into W3.CSS implementation and framework comparison</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Framework Overview -->
+        <section>
+            <h2>W3.CSS Framework Overview</h2>
+            <p>W3.CSS is a modern CSS framework developed by the W3Schools team. It's designed to be a lightweight alternative to Bootstrap, focusing on simplicity and performance while maintaining full responsiveness.</p>
+            
+            <h3>Key Framework Characteristics</h3>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>W3.CSS Advantages</h4>
+                    <ul>
+                        <li>No JavaScript dependencies</li>
+                        <li>Smaller file size (~20KB)</li>
+                        <li>Built-in responsiveness</li>
+                        <li>Intuitive class naming</li>
+                        <li>Cross-browser compatibility</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h4>Traditional CSS Challenges</h4>
+                    <ul>
+                        <li>Custom responsive breakpoints</li>
+                        <li>Browser compatibility issues</li>
+                        <li>Larger development time</li>
+                        <li>Inconsistent naming conventions</li>
+                        <li>Maintenance complexity</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Analysis Section -->
+        <section>
+            <h2>Implementation Analysis</h2>
+            <h3>Framework vs Traditional CSS Comparison</h3>
+            
+            <div class="code-comparison-grid">
+                <div class="code-block">
+                    <h4>Traditional CSS Approach</h4>
+                    <pre><code>/* Custom CSS for navigation */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: white;
+    padding: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.16);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .navbar-menu {
+        display: none;
+    }
+}</code></pre>
+                </div>
+
+                <div class="code-block">
+                    <h4>W3.CSS Framework Approach</h4>
+                    <pre><code>&lt;div class="w3-top w3-bar w3-white w3-padding w3-card"&gt;
+    &lt;a href="#home" class="w3-bar-item w3-button"&gt;
+        &lt;b&gt;BR&lt;/b&gt; Architects
+    &lt;/a&gt;
+    &lt;div class="w3-right w3-hide-small"&gt;
+        &lt;a href="#projects" class="w3-bar-item w3-button"&gt;Projects&lt;/a&gt;
+        &lt;a href="#about" class="w3-bar-item w3-button"&gt;About&lt;/a&gt;
+        &lt;a href="#contact" class="w3-bar-item w3-button"&gt;Contact&lt;/a&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- CSS Classes Analysis -->
+        <section>
+            <h2>W3.CSS Class Structure</h2>
+            
+            <table class="content-table">
+                <thead>
+                    <tr>
+                        <th>Class Category</th>
+                        <th>Example Classes</th>
+                        <th>Purpose</th>
+                        <th>Usage in Template</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Layout</td>
+                        <td><code>w3-container</code>, <code>w3-row</code>, <code>w3-col</code></td>
+                        <td>Grid system and spacing</td>
+                        <td>Used for responsive columns and consistent padding</td>
+                    </tr>
+                    <tr>
+                        <td>Navigation</td>
+                        <td><code>w3-bar</code>, <code>w3-top</code>, <code>w3-bar-item</code></td>
+                        <td>Navigation components</td>
+                        <td>Creates fixed top navigation with buttons</td>
+                    </tr>
+                    <tr>
+                        <td>Visual</td>
+                        <td><code>w3-white</code>, <code>w3-black</code>, <code>w3-card</code></td>
+                        <td>Colors and effects</td>
+                        <td>Applies color schemes and shadow effects</td>
+                    </tr>
+                    <tr>
+                        <td>Typography</td>
+                        <td><code>w3-xxlarge</code>, <code>w3-opacity</code></td>
+                        <td>Font sizes and effects</td>
+                        <td>Hero text sizing and subtle opacity effects</td>
+                    </tr>
+                    <tr>
+                        <td>Responsive</td>
+                        <td><code>w3-hide-small</code>, <code>l3</code>, <code>m6</code></td>
+                        <td>Responsive behavior</td>
+                        <td>Hides elements on mobile, defines grid breakpoints</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Performance Analysis -->
+        <section>
+            <h2>Performance & Optimization Analysis</h2>
+            
+            <h3>Framework Performance Metrics</h3>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h4>File Size</h4>
+                    <p class="metric-value">~20KB</p>
+                    <p>Compressed CSS file size</p>
+                </div>
+                <div class="metric-card">
+                    <h4>HTTP Requests</h4>
+                    <p class="metric-value">1</p>
+                    <p>Single CSS file request</p>
+                </div>
+                <div class="metric-card">
+                    <h4>Browser Support</h4>
+                    <p class="metric-value">100%</p>
+                    <p>All modern browsers</p>
+                </div>
+                <div class="metric-card">
+                    <h4>JavaScript Deps</h4>
+                    <p class="metric-value">0</p>
+                    <p>Pure CSS framework</p>
+                </div>
+            </div>
+
+            <h3>Optimization Opportunities</h3>
+            <div class="recommendations-grid">
+                <div class="recommendation-item good">
+                    <h4>✅ Strengths</h4>
+                    <ul>
+                        <li>CDN delivery for fast loading</li>
+                        <li>No JavaScript dependencies</li>
+                        <li>Minimal CSS specificity conflicts</li>
+                        <li>Built-in normalize.css integration</li>
+                    </ul>
+                </div>
+                <div class="recommendation-item improvement">
+                    <h4>⚠️ Areas for Improvement</h4>
+                    <ul>
+                        <li>Inline styles should be moved to CSS classes</li>
+                        <li>No responsive image optimization</li>
+                        <li>Could benefit from critical CSS loading</li>
+                        <li>Lack of CSS custom properties for theming</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Practices -->
+        <section>
+            <h2>Framework Implementation Best Practices</h2>
+            
+            <div class="practices-grid">
+                <div class="practice-card good">
+                    <h3>✅ What the Template Does Well</h3>
+                    <ul>
+                        <li><strong>Consistent Class Usage:</strong> Follows W3.CSS naming conventions throughout</li>
+                        <li><strong>Semantic Structure:</strong> Uses meaningful class combinations</li>
+                        <li><strong>Responsive Design:</strong> Implements mobile-first breakpoints effectively</li>
+                        <li><strong>Performance Conscious:</strong> Leverages CDN for framework delivery</li>
+                        <li><strong>Clean Code:</strong> Well-organized HTML structure with clear comments</li>
+                    </ul>
+                </div>
+                
+                <div class="practice-card improvement">
+                    <h3>🔧 Recommended Improvements</h3>
+                    <ul>
+                        <li><strong>Custom CSS Integration:</strong> Better separation of framework and custom styles</li>
+                        <li><strong>CSS Variables:</strong> Implement custom properties for consistent theming</li>
+                        <li><strong>Component Organization:</strong> Create reusable component patterns</li>
+                        <li><strong>Performance Optimization:</strong> Consider critical CSS for above-the-fold content</li>
+                        <li><strong>Accessibility Enhancement:</strong> Add ARIA attributes and semantic HTML5 elements</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section>
+            <h2>Framework Analysis Conclusion</h2>
+            
+            <h3>Overall Assessment</h3>
+            <p>The W3.CSS framework demonstrates excellent balance between simplicity and functionality. The Architect template showcases effective use of the framework's utility classes while maintaining clean, readable code structure.</p>
+            
+            <div class="final-rating">
+                <h4>Framework Implementation Rating</h4>
+                <div class="rating-breakdown">
+                    <div class="rating-item">
+                        <span>Code Organization</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 85%"></div>
+                        </div>
+                        <span>8.5/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>Performance</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 90%"></div>
+                        </div>
+                        <span>9.0/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>Maintainability</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 80%"></div>
+                        </div>
+                        <span>8.0/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>Best Practices</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 75%"></div>
+                        </div>
+                        <span>7.5/10</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Template Analysis Project</p>
+            <p>This is a class project for <a href="https://ksuweb.github.io/IT3203/" target="_blank">IT3203 - Web Development</a></p>
+        </div>
+    </footer>
+</body>
+</html>
