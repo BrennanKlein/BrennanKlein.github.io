@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Analysis Quiz - W3Schools Study</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>Template Analysis</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="framework-analysis.html" class="nav-link">Framework Analysis</a></li>
+                <li><a href="responsive-design.html" class="nav-link">Responsive Design</a></li>
+                <li><a href="references.html" class="nav-link">References</a></li>
+                <li><a href="quiz.html" class="nav-link active">Quiz</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header quiz-header">
+        <div class="container">
+            <h1>W3Schools Template Analysis Quiz</h1>
+            <p class="page-subtitle">Test your understanding of HTML, CSS, and responsive design concepts</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Quiz Instructions -->
+        <section class="quiz-instructions" id="instructions">
+            <h2>Quiz Instructions</h2>
+            <div class="instructions-content">
+                <h3>📋 Before You Begin</h3>
+                <ul class="instruction-list">
+                    <li>This quiz covers material from the W3Schools Architect Template analysis</li>
+                    <li>Read each question carefully before selecting your answer(s)</li>
+                    <li>Some questions have multiple correct answers - select all that apply</li>
+                    <li>Fill-in-the-blank questions are case-sensitive</li>
+                    <li>You need 70% or higher to pass</li>
+                </ul>
+                
+                <h3>🎯 Quiz Structure</h3>
+                <div class="quiz-stats">
+                    <div class="stat-box">
+                        <h4>5 Questions</h4>
+                        <p>Total questions</p>
+                    </div>
+                    <div class="stat-box">
+                        <h4>10 Points</h4>
+                        <p>Maximum score</p>
+                    </div>
+                    <div class="stat-box">
+                        <h4>7 Points</h4>
+                        <p>Passing score</p>
+                    </div>
+                </div>
+                
+                <button id="startQuiz" class="start-btn">Start Quiz</button>
+            </div>
+        </section>
+
+        <!-- Quiz Form -->
+        <section class="quiz-container" id="quizContainer" style="display: none;">
+            <form id="quizForm">
+                <!-- Question 1: Multiple Choice (Single Answer) -->
+                <div class="question-card">
+                    <h3>Question 1 (2 points)</h3>
+                    <p class="question-text">What is the primary advantage of the W3.CSS framework over Bootstrap?</p>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="q1" value="a">
+                            <span class="checkmark"></span>
+                            It has more built-in components
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q1" value="b">
+                            <span class="checkmark"></span>
+                            It requires no JavaScript dependencies
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q1" value="c">
+                            <span class="checkmark"></span>
+                            It has better browser support
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q1" value="d">
+                            <span class="checkmark"></span>
+                            It includes jQuery by default
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Question 2: Multiple Choice (Single Answer) -->
+                <div class="question-card">
+                    <h3>Question 2 (2 points)</h3>
+                    <p class="question-text">In the W3.CSS grid system, what does the class "w3-col l3 m6" create?</p>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="q2" value="a">
+                            <span class="checkmark"></span>
+                            3 columns on large screens, 6 on medium screens
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q2" value="b">
+                            <span class="checkmark"></span>
+                            25% width on large screens, 50% on medium screens
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q2" value="c">
+                            <span class="checkmark"></span>
+                            6 columns on large screens, 3 on medium screens
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q2" value="d">
+                            <span class="checkmark"></span>
+                            Fixed width of 300px on all screens
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Question 3: Multiple Choice (Single Answer) -->
+                <div class="question-card">
+                    <h3>Question 3 (2 points)</h3>
+                    <p class="question-text">What is the mobile-first approach in responsive design?</p>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="q3" value="a">
+                            <span class="checkmark"></span>
+                            Designing for mobile devices only
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q3" value="b">
+                            <span class="checkmark"></span>
+                            Starting with mobile styles and enhancing for larger screens
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q3" value="c">
+                            <span class="checkmark"></span>
+                            Making mobile versions after desktop design
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="q3" value="d">
+                            <span class="checkmark"></span>
+                            Using only mobile-specific CSS properties
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Question 4: Fill in the Blank -->
+                <div class="question-card">
+                    <h3>Question 4 (2 points)</h3>
+                    <p class="question-text">Complete the CSS class name: The W3.CSS class "w3-<input type="text" id="q4" name="q4" class="fill-blank" placeholder="answer">-small" is used to hide elements on small screens.</p>
+                    <p class="hint">💡 Hint: This class makes elements disappear on mobile devices</p>
+                </div>
+
+                <!-- Question 5: Multiple Choice (Multiple Answers) -->
+                <div class="question-card">
+                    <h3>Question 5 (2 points)</h3>
+                    <p class="question-text">Which of the following are benefits of semantic HTML? (Select all that apply)</p>
+                    <div class="options">
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q5" value="a">
+                            <span class="checkmark"></span>
+                            Improved accessibility for screen readers
+                        </label>
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q5" value="b">
+                            <span class="checkmark"></span>
+                            Better SEO optimization
+                        </label>
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q5" value="c">
+                            <span class="checkmark"></span>
+                            Faster loading times
+                        </label>
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q5" value="d">
+                            <span class="checkmark"></span>
+                            Clearer code structure and meaning
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quiz-actions">
+                    <button type="submit" class="submit-btn">Submit Quiz</button>
+                    <button type="button" id="resetQuiz" class="reset-btn">Reset Answers</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Results Section -->
+        <section class="quiz-results" id="quizResults" style="display: none;">
+            <div class="results-header">
+                <h2>Quiz Results</h2>
+                <div class="score-display">
+                    <div class="total-score">
+                        <span id="finalScore">0</span> / <span id="totalPoints">10</span>
+                    </div>
+                    <div class="percentage">
+                        <span id="percentage">0%</span>
+                    </div>
+                    <div class="pass-fail">
+                        <span id="passFailResult">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detailed-results" id="detailedResults">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+
+            <div class="results-actions">
+                <button id="retakeQuiz" class="retake-btn">Retake Quiz</button>
+                <a href="index.html" class="home-btn">Return to Home</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Template Analysis Project</p>
+            <p>This is a class project for <a href="https://ksuweb.github.io/IT3203/" target="_blank">IT3203 - Web Development</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Quiz Data and Answers
+        const quizData = {
+            q1: { 
+                correct: 'b', 
+                points: 2,
+                explanation: 'W3.CSS requires no JavaScript dependencies, making it lighter and faster than Bootstrap which often relies on jQuery.'
+            },
+            q2: { 
+                correct: 'b', 
+                points: 2,
+                explanation: 'l3 means 3/12 = 25% width on large screens, m6 means 6/12 = 50% width on medium screens.'
+            },
+            q3: { 
+                correct: 'b', 
+                points: 2,
+                explanation: 'Mobile-first approach means starting with base styles for mobile devices and then adding enhancements for larger screens.'
+            },
+            q4: { 
+                correct: 'hide', 
+                points: 2,
+                explanation: 'The class "w3-hide-small" hides elements on small screens (mobile devices).'
+            },
+            q5: { 
+                correct: ['a', 'b', 'd'], 
+                points: 2,
+                explanation: 'Semantic HTML improves accessibility, SEO, and code clarity. It doesn\'t directly affect loading times.'
+            }
+        };
+
+        // DOM Elements
+        const instructionsSection = document.getElementById('instructions');
+        const quizContainer = document.getElementById('quizContainer');
+        const quizResults = document.getElementById('quizResults');
+        const startQuizBtn = document.getElementById('startQuiz');
+        const quizForm = document.getElementById('quizForm');
+        const resetQuizBtn = document.getElementById('resetQuiz');
+        const retakeQuizBtn = document.getElementById('retakeQuiz');
+
+        // Start Quiz
+        startQuizBtn.addEventListener('click', function() {
+            instructionsSection.style.display = 'none';
+            quizContainer.style.display = 'block';
+            quizResults.style.display = 'none';
+            resetForm();
+        });
+
+        // Reset Quiz
+        resetQuizBtn.addEventListener('click', resetForm);
+
+        // Retake Quiz
+        retakeQuizBtn.addEventListener('click', function() {
+            instructionsSection.style.display = 'block';
+            quizContainer.style.display = 'none';
+            quizResults.style.display = 'none';
+            resetForm();
+        });
+
+        // Reset Form Function
+        function resetForm() {
+            quizForm.reset();
+            // Clear any previous result styling
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.classList.remove('correct', 'incorrect');
+            });
+        }
+
+        // Submit Quiz
+        quizForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let totalScore = 0;
+            let results = [];
+
+            // Question 1
+            const q1Answer = document.querySelector('input[name="q1"]:checked');
+            const q1Result = checkSingleChoice('q1', q1Answer ? q1Answer.value : null);
+            results.push(q1Result);
+            totalScore += q1Result.earned;
+
+            // Question 2
+            const q2Answer = document.querySelector('input[name="q2"]:checked');
+            const q2Result = checkSingleChoice('q2', q2Answer ? q2Answer.value : null);
+            results.push(q2Result);
+            totalScore += q2Result.earned;
+
+            // Question 3
+            const q3Answer = document.querySelector('input[name="q3"]:checked');
+            const q3Result = checkSingleChoice('q3', q3Answer ? q3Answer.value : null);
+            results.push(q3Result);
+            totalScore += q3Result.earned;
+
+            // Question 4 (Fill in blank)
+            const q4Answer = document.getElementById('q4').value.trim().toLowerCase();
+            const q4Result = checkFillBlank('q4', q4Answer);
+            results.push(q4Result);
+            totalScore += q4Result.earned;
+
+            // Question 5 (Multiple correct)
+            const q5Answers = Array.from(document.querySelectorAll('input[name="q5"]:checked')).map(input => input.value);
+            const q5Result = checkMultipleChoice('q5', q5Answers);
+            results.push(q5Result);
+            totalScore += q5Result.earned;
+
+            // Display Results
+            displayResults(totalScore, results);
+        });
+
+        // Check Single Choice Question
+        function checkSingleChoice(questionId, userAnswer) {
+            const correct = quizData[questionId].correct;
+            const points = quizData[questionId].points;
+            const isCorrect = userAnswer === correct;
+            
+            return {
+                question: questionId,
+                userAnswer: userAnswer || 'No answer',
+                correctAnswer: correct,
+                isCorrect: isCorrect,
+                earned: isCorrect ? points : 0,
+                total: points,
+                explanation: quizData[questionId].explanation
+            };
+        }
+
+        // Check Fill in Blank
+        function checkFillBlank(questionId, userAnswer) {
+            const correct = quizData[questionId].correct;
+            const points = quizData[questionId].points;
+            const isCorrect = userAnswer === correct;
+            
+            return {
+                question: questionId,
+                userAnswer: userAnswer || 'No answer',
+                correctAnswer: correct,
+                isCorrect: isCorrect,
+                earned: isCorrect ? points : 0,
+                total: points,
+                explanation: quizData[questionId].explanation
+            };
+        }
+
+        // Check Multiple Choice (Multiple Correct)
+        function checkMultipleChoice(questionId, userAnswers) {
+            const correct = quizData[questionId].correct;
+            const points = quizData[questionId].points;
+            
+            // Check if arrays are equal (same length and same elements)
+            const isCorrect = userAnswers.length === correct.length && 
+                             userAnswers.sort().every((val, index) => val === correct.sort()[index]);
+            
+            return {
+                question: questionId,
+                userAnswer: userAnswers.length > 0 ? userAnswers.join(', ') : 'No answer',
+                correctAnswer: correct.join(', '),
+                isCorrect: isCorrect,
+                earned: isCorrect ? points : 0,
+                total: points,
+                explanation: quizData[questionId].explanation
+            };
+        }
+
+        // Display Results
+        function displayResults(totalScore, results) {
+            const totalPoints = 10;
+            const percentage = Math.round((totalScore / totalPoints) * 100);
+            const passed = percentage >= 70;
+
+            // Update score display
+            document.getElementById('finalScore').textContent = totalScore;
+            document.getElementById('totalPoints').textContent = totalPoints;
+            document.getElementById('percentage').textContent = percentage + '%';
+            document.getElementById('passFailResult').textContent = passed ? '✅ PASSED' : '❌ FAILED';
+            document.getElementById('passFailResult').className = passed ? 'pass' : 'fail';
+
+            // Create detailed results
+            const detailedResults = document.getElementById('detailedResults');
+            detailedResults.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const resultCard = document.createElement('div');
+                resultCard.className = `result-card ${result.isCorrect ? 'correct' : 'incorrect'}`;
+                
+                resultCard.innerHTML = `
+                    <div class="result-header">
+                        <h4>Question ${index + 1}</h4>
+                        <span class="result-score">${result.earned}/${result.total} points</span>
+                        <span class="result-status">${result.isCorrect ? '✅' : '❌'}</span>
+                    </div>
+                    <div class="result-details">
+                        <p><strong>Your answer:</strong> ${result.userAnswer}</p>
+                        <p><strong>Correct answer:</strong> ${result.correctAnswer}</p>
+                        <p class="explanation"><strong>Explanation:</strong> ${result.explanation}</p>
+                    </div>
+                `;
+                
+                detailedResults.appendChild(resultCard);
+            });
+
+            // Show results, hide quiz
+            quizContainer.style.display = 'none';
+            quizResults.style.display = 'block';
+            
+            // Scroll to results
+            quizResults.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
