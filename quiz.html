@@ -1,987 +1,10 @@
-// Retake functionality
-            retakeQuizBtn.addEventListener('click', retakeQuiz);
-            reviewAnswersBtn.addEventListener('click', reviewAllAnswers);
-            
-            // Generate question indicators
-            generateQuestionIndicators();
-            
-            // Set up question navigation
-            setupQuestionNavigation();
-            
-            // Initialize form validation
-            setupFormValidation();
-        }
-
-        function setupAccessibility() {
-            // Skip link functionality
-            const skipLink = document.querySelector('.skip-link');
-            if (skipLink) {
-                skipLink.addEventListener('focus', function() {
-                    this.style.left = '10px';
-                    this.style.top = '10px';
-                });
-                
-                skipLink.addEventListener('blur', function() {
-                    this.style.left = '-9999px';
-                    this.style.top = '-9999px';
-                });
-            }
-
-            // Keyboard navigation for quiz
-            document.addEventListener('keydown', function(e) {
-                if (quizContainer.style.display !== 'none') {
-                    switch(e.key) {
-                        case 'ArrowLeft':
-                            if (!prevBtn.disabled) {
-                                e.preventDefault();
-                                previousQuestion();
-                            }
-                            break;
-                        case 'ArrowRight':
-                            if (currentQuestionIndex < totalQuestions - 1) {
-                                e.preventDefault();
-                                nextQuestion();
-                            }
-                            break;
-                        case 'Enter':
-                            if (e.target.type === 'radio' || e.target.type === 'checkbox') {
-                                e.target.checked = !e.target.checked;
-                                saveCurrentAnswer();
-                            }
-                            break;
-                    }
-                }
-            });
-        }
-
-        function startQuiz() {
-            quizStartTime = Date.now();
-            quizAttempts++;
-            localStorage.setItem('quizAttempts', quizAttempts.toString());
-            
-            // Hide instructions, show quiz
-            instructionsSection.style.display = 'none';
-            quizContainer.style.display = 'block';
-            quizProgress.style.display = 'block';
-            quizResults.style.display = 'none';
-            
-            // Reset quiz state
-            currentQuestionIndex = 0;
-            userAnswers = {};
-            
-            // Show first question
-            showQuestion(0);
-            updateProgress();
-            
-            // Focus on first question for accessibility
-            questionCards[0].scrollIntoView({ behavior: 'smooth' });
-            const firstInput = questionCards[0].querySelector('input');
-            if (firstInput) {
-                setTimeout(() => firstInput.focus(), 500);
-            }
-        }
-
-        function generateQuestionIndicators() {
-            const indicator = document.getElementById('questionIndicator');
-            if (indicator) {
-                indicator.innerHTML = '';
-                for (let i = 0; i < totalQuestions; i++) {
-                    const dot = document.createElement('button');
-                    dot.className = 'question-dot';
-                    dot.setAttribute('aria-label', `Go to question ${i + 1}`);
-                    dot.setAttribute('data-question', i);
-                    dot.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        goToQuestion(i);
-                    });
-                    indicator.appendChild(dot);
-                }
-            }
-        }
-
-        function setupQuestionNavigation() {
-            // Hide all questions initially
-            questionCards.forEach((card, index) => {
-                card.style.display = index === 0 ? 'block' : 'none';
-            });
-            
-            // Add input change listeners
-            questionCards.forEach((card, index) => {
-                const inputs = card.querySelectorAll('input');
-                inputs.forEach(input => {
-                    input.addEventListener('change', saveCurrentAnswer);
-                });
-            });
-        }
-
-        function setupFormValidation() {
-            // Real-time validation feedback
-            const inputs = quizForm.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    validateInput(this);
-                });
-            });
-        }
-
-        function validateInput(input) {
-            const card = input.closest('.question-card');
-            const questionNum = card.dataset.question;
-            
-            if (input.type === 'text' && input.value.trim() === '') {
-                input.setAttribute('aria-invalid', 'true');
-                card.classList.add('incomplete');
-            } else {
-                input.setAttribute('aria-invalid', 'false');
-                card.classList.remove('incomplete');
-            }
-        }
-
-        function showQuestion(index) {
-            // Hide all questions
-            questionCards.forEach((card, i) => {
-                card.style.display = i === index ? 'block' : 'none';
-            });
-            
-            // Update navigation buttons
-            prevBtn.disabled = index === 0;
-            nextBtn.style.display = index === totalQuestions - 1 ? 'none' : 'inline-block';
-            quizActions.style.display = index === totalQuestions - 1 ? 'block' : 'none';
-            
-            // Update progress
-            updateProgress();
-            updateQuestionIndicators();
-            
-            // Announce to screen readers
-            const questionText = questionCards[index].querySelector('.question-text').textContent;
-            announceToScreenReader(`Question ${index + 1} of ${totalQuestions}: ${questionText}`);
-        }
-
-        function updateProgress() {
-            const progressFill = document.getElementById('progressFill');
-            const currentQuestionSpan = document.getElementById('currentQuestion');
-            const progressBar = document.querySelector('.progress-bar');
-            
-            const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
-            
-            if (progressFill) {
-                progressFill.style.width = progress + '%';
-            }
-            
-            if (currentQuestionSpan) {
-                currentQuestionSpan.textContent = currentQuestionIndex + 1;
-            }
-            
-            if (progressBar) {
-                progressBar.setAttribute('aria-valuenow', currentQuestionIndex + 1);
-            }
-        }
-
-        function updateQuestionIndicators() {
-            const dots = document.querySelectorAll('.question-dot');
-            dots.forEach((dot, index) => {
-                dot.classList.remove('current', 'completed');
-                if (index === currentQuestionIndex) {
-                    dot.classList.add('current');
-                } else if (index < currentQuestionIndex) {
-                    dot.classList.add('completed');
-                }
-            });
-        }
-
-        function saveCurrentAnswer() {
-            const currentCard = questionCards[currentQuestionIndex];
-            const questionKey = `q${currentQuestionIndex + 1}`;
-            
-            // Handle different input types
-            const radioInputs = currentCard.querySelectorAll('input[type="radio"]:checked');
-            const checkboxInputs = currentCard.querySelectorAll('input[type="checkbox"]:checked');
-            const textInputs = currentCard.querySelectorAll('input[type="text"]');
-            
-            if (radioInputs.length > 0) {
-                userAnswers[questionKey] = radioInputs[0].value;
-            } else if (checkboxInputs.length > 0) {
-                userAnswers[questionKey] = Array.from(checkboxInputs).map(input => input.value);
-            } else if (textInputs.length > 0) {
-                userAnswers[questionKey] = textInputs[0].value.trim().toLowerCase();
-            }
-            
-            // Mark question as completed
-            const dot = document.querySelector(`[data-question="${currentQuestionIndex}"]`);
-            if (dot && userAnswers[questionKey]) {
-                dot.classList.add('answered');
-            }
-        }
-
-        function previousQuestion() {
-            if (currentQuestionIndex > 0) {
-                saveCurrentAnswer();
-                currentQuestionIndex--;
-                showQuestion(currentQuestionIndex);
-            }
-        }
-
-        function nextQuestion() {
-            if (currentQuestionIndex < totalQuestions - 1) {
-                saveCurrentAnswer();
-                currentQuestionIndex++;
-                showQuestion(currentQuestionIndex);
-            }
-        }
-
-        function goToQuestion(index) {
-            if (index >= 0 && index < totalQuestions) {
-                saveCurrentAnswer();
-                currentQuestionIndex = index;
-                showQuestion(currentQuestionIndex);
-            }
-        }
-
-        function submitQuiz(e) {
-            e.preventDefault();
-            
-            // Save final answer
-            saveCurrentAnswer();
-            
-            // Calculate results
-            const results = calculateResults();
-            
-            // Display results
-            displayResults(results);
-            
-            // Save attempt to localStorage
-            saveQuizAttempt(results);
-        }
-
-        function calculateResults() {
-            let totalScore = 0;
-            let results = [];
-            
-            Object.keys(quizData).forEach((questionKey, index) => {
-                const questionData = quizData[questionKey];
-                const userAnswer = userAnswers[questionKey];
-                const result = checkAnswer(questionKey, userAnswer);
-                
-                results.push({
-                    question: questionKey,
-                    questionNumber: index + 1,
-                    userAnswer: userAnswer || 'No answer',
-                    correctAnswer: questionData.correct,
-                    isCorrect: result.isCorrect,
-                    earned: result.earned,
-                    total: questionData.points,
-                    explanation: questionData.explanation,
-                    topic: questionData.topic
-                });
-                
-                totalScore += result.earned;
-            });
-            
-            const quizDuration = Math.round((Date.now() - quizStartTime) / 1000);
-            
-            return {
-                totalScore,
-                totalPossible: 20,
-                percentage: Math.round((totalScore / 20) * 100),
-                passed: (totalScore / 20) >= 0.7,
-                duration: quizDuration,
-                questions: results,
-                attempt: quizAttempts
-            };
-        }
-
-        function checkAnswer(questionKey, userAnswer) {
-            const questionData = quizData[questionKey];
-            const correct = questionData.correct;
-            const points = questionData.points;
-            
-            let isCorrect = false;
-            
-            if (Array.isArray(correct)) {
-                // Multiple correct answers
-                if (Array.isArray(userAnswer)) {
-                    isCorrect = correct.length === userAnswer.length && 
-                               correct.sort().every((val, index) => val === userAnswer.sort()[index]);
-                }
-            } else {
-                // Single correct answer
-                isCorrect = userAnswer === correct;
-            }
-            
-            return {
-                isCorrect,
-                earned: isCorrect ? points : 0
-            };
-        }
-
-        function displayResults(results) {
-            // Hide quiz, show results
-            quizContainer.style.display = 'none';
-            quizProgress.style.display = 'none';
-            quizResults.style.display = 'block';
-            
-            // Update score display
-            document.getElementById('finalScore').textContent = results.totalScore;
-            document.getElementById('totalPoints').textContent = results.totalPossible;
-            document.getElementById('percentage').textContent = results.percentage + '%';
-            
-            // Update pass/fail indicator
-            const passFailElement = document.getElementById('passFailResult');
-            const performanceElement = document.getElementById('performanceLevel');
-            
-            if (results.passed) {
-                passFailElement.textContent = '✅ PASSED';
-                passFailElement.className = 'result-badge pass';
-                performanceElement.textContent = getPerformanceLevel(results.percentage);
-            } else {
-                passFailElement.textContent = '❌ NEEDS IMPROVEMENT';
-                passFailElement.className = 'result-badge fail';
-                performanceElement.textContent = 'Study the explanations and try again';
-            }
-            
-            // Generate detailed results
-            generateDetailedResults(results);
-            
-            // Generate performance insights
-            generatePerformanceInsights(results);
-            
-            // Scroll to results
-            quizResults.scrollIntoView({ behavior: 'smooth' });
-            
-            // Announce results to screen readers
-            announceToScreenReader(`Quiz completed. Score: ${results.totalScore} out of ${results.totalPossible} points. ${results.passed ? 'Passed' : 'Failed'}.`);
-        }
-
-        function generateDetailedResults(results) {
-            const detailedResults = document.getElementById('detailedResults');
-            detailedResults.innerHTML = '';
-            
-            results.questions.forEach((result, index) => {
-                const resultCard = document.createElement('div');
-                resultCard.className = `result-card ${result.isCorrect ? 'correct' : 'incorrect'}`;
-                
-                const userAnswerDisplay = Array.isArray(result.userAnswer) ? 
-                    result.userAnswer.join(', ') : result.userAnswer;
-                const correctAnswerDisplay = Array.isArray(result.correctAnswer) ? 
-                    result.correctAnswer.join(', ') : result.correctAnswer;
-                
-                resultCard.innerHTML = `
-                    <div class="result-header">
-                        <h4>Question ${result.questionNumber} - ${result.topic}</h4>
-                        <div class="result-meta">
-                            <span class="result-score">${result.earned}/${result.total} points</span>
-                            <span class="result-status">${result.isCorrect ? '✅' : '❌'}</span>
-                        </div>
-                    </div>
-                    <div class="result-details">
-                        <p><strong>Your answer:</strong> ${userAnswerDisplay}</p>
-                        <p><strong>Correct answer:</strong> ${correctAnswerDisplay}</p>
-                        <div class="explanation">
-                            <h5>💡 Explanation:</h5>
-                            <p>${result.explanation}</p>
-                        </div>
-                    </div>
-                `;
-                
-                detailedResults.appendChild(resultCard);
-            });
-        }
-
-        function generatePerformanceInsights(results) {
-            const insightsContent = document.getElementById('insightsContent');
-            const topicPerformance = analyzeTopicPerformance(results);
-            
-            let insights = `
-                <div class="insights-grid">
-                    <div class="insight-card">
-                        <h4>📊 Overall Performance</h4>
-                        <ul>
-                            <li>Score: ${results.totalScore}/${results.totalPossible} (${results.percentage}%)</li>
-                            <li>Time taken: ${Math.floor(results.duration / 60)}:${(results.duration % 60).toString().padStart(2, '0')}</li>
-                            <li>Attempt: #${results.attempt}</li>
-                            <li>Performance level: ${getPerformanceLevel(results.percentage)}</li>
-                        </ul>
-                    </div>
-                    <div class="insight-card">
-                        <h4>🎯 Topic Strengths</h4>
-                        <ul>`;
-            
-            topicPerformance.strong.forEach(topic => {
-                insights += `<li>✅ ${topic}</li>`;
-            });
-            
-            insights += `</ul>
-                    </div>
-                    <div class="insight-card">
-                        <h4>📚 Areas for Review</h4>
-                        <ul>`;
-            
-            if (topicPerformance.weak.length > 0) {
-                topicPerformance.weak.forEach(topic => {
-                    insights += `<li>📖 ${topic}</li>`;
-                });
-            } else {
-                insights += `<li>🎉 Excellent performance across all topics!</li>`;
-            }
-            
-            insights += `</ul>
-                    </div>
-                    <div class="insight-card">
-                        <h4>💡 Study Recommendations</h4>
-                        <ul>
-                            ${getStudyRecommendations(results.percentage, topicPerformance.weak)}
-                        </ul>
-                    </div>
-                </div>`;
-            
-            insightsContent.innerHTML = insights;
-        }
-
-        function analyzeTopicPerformance(results) {
-            const topicScores = {};
-            
-            results.questions.forEach(question => {
-                if (!topicScores[question.topic]) {
-                    topicScores[question.topic] = { correct: 0, total: 0 };
-                }
-                topicScores[question.topic].total++;
-                if (question.isCorrect) {
-                    topicScores[question.topic].correct++;
-                }
-            });
-            
-            const strong = [];
-            const weak = [];
-            
-            Object.keys(topicScores).forEach(topic => {
-                const score = topicScores[topic];
-                const percentage = (score.correct / score.total) * 100;
-                
-                if (percentage >= 80) {
-                    strong.push(topic);
-                } else if (percentage < 60) {
-                    weak.push(topic);
-                }
-            });
-            
-            return { strong, weak };
-        }
-
-        function getPerformanceLevel(percentage) {
-            if (percentage >= 90) return 'Excellent - Mastery Level';
-            if (percentage >= 80) return 'Very Good - Strong Understanding';
-            if (percentage >= 70) return 'Good - Satisfactory Performance';
-            if (percentage >= 60) return 'Fair - Needs Some Review';
-            return 'Needs Significant Review';
-        }
-
-        function getStudyRecommendations(percentage, weakTopics) {
-            let recommendations = [];
-            
-            if (percentage < 70) {
-                recommendations.push('<li>📖 Review all course materials thoroughly</li>');
-                recommendations.push('<li>🔄 Retake the quiz after studying</li>');
-            }
-            
-            if (weakTopics.includes('CSS Framework Architecture')) {
-                recommendations.push('<li>📚 Study the Framework Analysis page in detail</li>');
-            }
-            
-            if (weakTopics.includes('Responsive Design')) {
-                recommendations.push('<li>💻 Practice with responsive design examples</li>');
-            }
-            
-            if (weakTopics.includes('HTML5 Semantics')) {
-                recommendations.push('<li>🏗️ Review semantic HTML elements and their purposes</li>');
-            }
-            
-            if (recommendations.length === 0) {
-                recommendations.push('<li>🎉 Excellent work! Consider exploring advanced topics</li>');
-                recommendations.push('<li>🚀 Share your knowledge with others</li>');
-            }
-            
-            return recommendations.join('');
-        }
-
-        function saveQuizAttempt(results) {
-            const attempts = JSON.parse(localStorage.getItem('quizAttempts') || '[]');
-            attempts.push({
-                date: new Date().toISOString(),
-                score: results.totalScore,
-                percentage: results.percentage,
-                passed: results.passed,
-                duration: results.duration
-            });
-            localStorage.setItem('quizResults', JSON.stringify(attempts));
-        }
-
-        function retakeQuiz() {
-            instructionsSection.style.display = 'block';
-            quizContainer.style.display = 'none';
-            quizProgress.style.display = 'none';
-            quizResults.style.display = 'none';
-            
-            // Reset form
-            quizForm.reset();
-            userAnswers = {};
-            currentQuestionIndex = 0;
-            
-            // Clear question indicators
-            document.querySelectorAll('.question-dot').forEach(dot => {
-                dot.classList.remove('current', 'completed', 'answered');
-            });
-            
-            // Scroll to top
-            instructionsSection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function reviewAllAnswers() {
-            // Show all questions with answers
-            questionCards.forEach(card => {
-                card.style.display = 'block';
-            });
-            
-            // Hide navigation
-            document.querySelector('.quiz-navigation').style.display = 'none';
-            quizActions.style.display = 'none';
-            
-            // Show quiz container
-            quizContainer.style.display = 'block';
-            quizResults.style.display = 'none';
-            
-            // Scroll to first question
-            questionCards[0].scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function announceToScreenReader(message) {
-            const announcement = document.createElement('div');
-            announcement.setAttribute('aria-live', 'polite');
-            announcement.setAttribute('aria-atomic', 'true');
-            announcement.className = 'sr-only';
-            announcement.textContent = message;
-            
-            document.body.appendChild(announcement);
-            
-            setTimeout(() => {
-                document.body.removeChild(announcement);
-            }, 1000);
-        }
-    </script>
-
-    <!-- Additional CSS for enhanced quiz styling -->
-    <style>
-        .quiz-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .stat-box {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .stat-box:hover {
-            transform: translateY(-3px);
-        }
-
-        .stat-box h4 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-
-        .quiz-topics {
-            margin: 30px 0;
-        }
-
-        .topic-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .topic-tag {
-            background: #f8f9fa;
-            border: 2px solid #667eea;
-            color: #667eea;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .topic-tag:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .quiz-navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 30px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .nav-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 100px;
-        }
-
-        .nav-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .nav-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .question-indicator {
-            display: flex;
-            gap: 8px;
-        }
-
-        .question-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: 2px solid #ddd;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .question-dot:hover {
-            border-color: #667eea;
-        }
-
-        .question-dot.current {
-            background: #667eea;
-            border-color: #667eea;
-        }
-
-        .question-dot.completed {
-            background: #28a745;
-            border-color: #28a745;
-        }
-
-        .question-dot.answered {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.3);
-        }
-
-        .quiz-progress {
-            margin: 20px 0;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-
-        .progress-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .progress-bar {
-            flex: 1;
-            height: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #28a745, #20c997);
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .progress-text {
-            font-weight: 600;
-            color: #2c3e50;
-            white-space: nowrap;
-        }
-
-        .score-circle {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            margin: 0 auto 20px;
-        }
-
-        .total-score {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        .percentage {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .result-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .result-badge.pass {
-            background: #28a745;
-            color: white;
-        }
-
-        .result-badge.fail {
-            background: #dc3545;
-            color: white;
-        }
-
-        .insights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .insight-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .insight-card h4 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-
-        .insight-card ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .insight-card li {
-            padding: 5px 0;
-            color: #5a6c7d;
-        }
-
-        .results-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-
-        .results-actions button,
-        .results-actions a {
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-weight: 600;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 140px;
-            text-align: center;
-        }
-
-        .retake-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .review-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .home-btn {
-            background: #6c757d;
-            color: white;
-            display: inline-block;
-        }
-
-        .results-actions button:hover,
-        .results-actions a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        }
-
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        .result-card {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .result-card.correct {
-            border-left: 6px solid #28a745;
-            background: #f8fff8;
-        }
-
-        .result-card.incorrect {
-            border-left: 6px solid #dc3545;
-            background: #fff8f8;
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .result-meta {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .result-score {
-            background: #f8f9fa;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .result-status {
-            font-size: 1.2rem;
-        }
-
-        .explanation {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .explanation h5 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
-
-        .form-help {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .hint {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 4px;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #856404;
-        }
-
-        .start-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 20px auto;
-            display: block;
-        }
-
-        .start-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(40, 167, 69, 0.3);
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 767px) {
-            .quiz-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .topic-list {
-                justify-content: center;
-            }
-
-            .quiz-navigation {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .question-indicator {
-                order: -1;
-            }
-
-            .score-circle {
-                width: 120px;
-                height: 120px;
-            }
-
-            .total-score {
-                font-size: 1.5rem;
-            }
-
-            .percentage {
-                font-size: 1rem;
-            }
-
-            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Interactive quiz testing knowledge of HTML5, CSS frameworks, responsive design, and modern web development practices from the W3Schools template analysis.">
-    <title>Interactive Knowledge Quiz - W3Schools Template Analysis</title>
+    <meta name="description" content="Interactive quiz testing knowledge of HTML5, CSS frameworks, responsive design, and modern web development practices covered in the W3Schools template analysis.">
+    <title>Interactive Quiz - W3Schools Template Analysis</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -1015,8 +38,8 @@
     <!-- Page Header -->
     <header class="page-header quiz-header" role="banner">
         <div class="container">
-            <h1>W3Schools Template Analysis Quiz</h1>
-            <p class="page-subtitle">Test your understanding of HTML5, CSS frameworks, responsive design, and modern web development concepts</p>
+            <h1>Interactive Knowledge Assessment</h1>
+            <p class="page-subtitle">Test your understanding of HTML5, CSS frameworks, responsive design, and modern web development practices</p>
         </div>
     </header>
 
@@ -1024,213 +47,201 @@
     <main id="main-content" class="container" role="main">
         <!-- Quiz Instructions -->
         <section class="quiz-instructions" id="instructions" aria-labelledby="instructions-heading">
-            <h2 id="instructions-heading">Interactive Quiz Instructions</h2>
+            <h2 id="instructions-heading">Quiz Instructions & Overview</h2>
             <div class="instructions-content">
-                <div class="terms-grid">
-                    <article class="term-card">
-                        <h3>📋 Quiz Overview</h3>
+                <h3>📋 Before You Begin</h3>
+                <p>This comprehensive assessment evaluates your understanding of the concepts covered in our W3Schools Architect Template analysis. The quiz encompasses HTML5 semantics, CSS framework implementation, responsive design principles, and modern web development best practices.</p>
+                
+                <div class="instruction-list">
+                    <article class="instruction-item">
+                        <h4>📖 Content Coverage</h4>
                         <ul>
-                            <li>10 comprehensive questions covering all analysis topics</li>
-                            <li>Multiple choice, multiple select, and fill-in-the-blank formats</li>
-                            <li>Immediate feedback with detailed explanations</li>
-                            <li>Progress tracking and performance analytics</li>
-                            <li>Mobile-optimized interface with touch-friendly controls</li>
+                            <li>W3.CSS framework architecture and implementation</li>
+                            <li>Responsive design principles and mobile-first methodology</li>
+                            <li>HTML5 semantic structure and accessibility features</li>
+                            <li>Performance optimization and best practices</li>
+                            <li>Modern web development standards and techniques</li>
                         </ul>
                     </article>
                     
-                    <article class="term-card">
-                        <h3>🎯 Scoring & Assessment</h3>
+                    <article class="instruction-item">
+                        <h4>📝 Question Format Guidelines</h4>
                         <ul>
-                            <li>Each question worth 1-2 points (20 points total)</li>
-                            <li>Passing score: 14/20 (70% or higher)</li>
-                            <li>Instant scoring with detailed breakdown</li>
-                            <li>Retake option available for improvement</li>
-                            <li>Performance tracking across attempts</li>
+                            <li>Read each question carefully before selecting your answer(s)</li>
+                            <li>Multiple choice questions have only one correct answer</li>
+                            <li>Checkbox questions may have multiple correct answers - select all that apply</li>
+                            <li>Fill-in-the-blank questions are case-sensitive and require exact matches</li>
+                            <li>Review your answers before submitting - you can change them until submission</li>
                         </ul>
                     </article>
                     
-                    <article class="term-card">
-                        <h3>⚡ Technical Features</h3>
+                    <article class="instruction-item">
+                        <h4>🎯 Scoring & Assessment</h4>
                         <ul>
-                            <li>Responsive design optimized for all devices</li>
-                            <li>Keyboard navigation and screen reader support</li>
-                            <li>Progress saving and resume capability</li>
-                            <li>Detailed explanations for learning reinforcement</li>
-                            <li>Performance metrics and improvement suggestions</li>
-                        </ul>
-                    </article>
-                    
-                    <article class="term-card">
-                        <h3>🔧 Accessibility Features</h3>
-                        <ul>
-                            <li>High contrast mode support</li>
-                            <li>Reduced motion preferences respected</li>
-                            <li>Screen reader optimized with ARIA labels</li>
-                            <li>Keyboard-only navigation fully supported</li>
-                            <li>Touch targets meet accessibility guidelines</li>
+                            <li>You need a score of 70% or higher to pass the assessment</li>
+                            <li>Each question is worth equal points toward your total score</li>
+                            <li>Partial credit is not awarded for partially correct answers</li>
+                            <li>You may retake the quiz if you don't achieve a passing score</li>
+                            <li>Detailed explanations are provided for all answers after submission</li>
                         </ul>
                     </article>
                 </div>
                 
-                <div class="quiz-stats">
-                    <div class="stat-box">
-                        <h4>10 Questions</h4>
-                        <p>Comprehensive coverage</p>
+                <h3>🎯 Assessment Structure</h3>
+                <div class="summary-stats" role="region" aria-label="Quiz statistics">
+                    <div class="stat-item">
+                        <h4>Questions</h4>
+                        <p class="stat-number">10</p>
                     </div>
-                    <div class="stat-box">
-                        <h4>20 Points</h4>
-                        <p>Maximum score</p>
+                    <div class="stat-item">
+                        <h4>Total Points</h4>
+                        <p class="stat-number">20</p>
                     </div>
-                    <div class="stat-box">
-                        <h4>14 Points</h4>
-                        <p>Passing threshold</p>
+                    <div class="stat-item">
+                        <h4>Passing Score</h4>
+                        <p class="stat-number">14</p>
                     </div>
-                    <div class="stat-box">
-                        <h4>~15 Minutes</h4>
-                        <p>Estimated time</p>
-                    </div>
-                </div>
-                
-                <div class="quiz-topics">
-                    <h3>📚 Topics Covered</h3>
-                    <div class="topic-list">
-                        <span class="topic-tag">W3.CSS Framework</span>
-                        <span class="topic-tag">Responsive Design</span>
-                        <span class="topic-tag">HTML5 Semantics</span>
-                        <span class="topic-tag">CSS Grid & Flexbox</span>
-                        <span class="topic-tag">Mobile-First Design</span>
-                        <span class="topic-tag">Accessibility</span>
-                        <span class="topic-tag">Performance</span>
-                        <span class="topic-tag">Best Practices</span>
+                    <div class="stat-item">
+                        <h4>Time Limit</h4>
+                        <p class="stat-number">None</p>
                     </div>
                 </div>
                 
-                <button id="startQuiz" class="start-btn" aria-describedby="start-help">
-                    🚀 Start Interactive Quiz
-                </button>
-                <div id="start-help" class="form-help">Begin your knowledge assessment journey</div>
-            </div>
-        </section>
-
-        <!-- Quiz Progress Indicator -->
-        <section class="quiz-progress" id="quizProgress" style="display: none;" aria-labelledby="progress-heading">
-            <h2 id="progress-heading" class="sr-only">Quiz Progress</h2>
-            <div class="progress-container">
-                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="10">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-text">
-                    <span id="currentQuestion">1</span> of <span id="totalQuestions">10</span> Questions
+                <div class="quiz-actions">
+                    <button id="startQuiz" class="quiz-start-btn">Begin Assessment</button>
                 </div>
             </div>
         </section>
 
         <!-- Quiz Form -->
-        <section class="quiz-container" id="quizContainer" style="display: none;" aria-labelledby="quiz-form-heading">
-            <h2 id="quiz-form-heading" class="sr-only">Quiz Questions</h2>
-            <form id="quizForm" novalidate>
-                
-                <!-- Question 1: Framework Knowledge -->
-                <fieldset class="question-card" data-question="1">
-                    <legend>Question 1 (2 points) - CSS Framework Fundamentals</legend>
+        <section class="quiz-container" id="quizContainer" style="display: none;" aria-labelledby="quiz-heading">
+            <h2 id="quiz-heading">W3Schools Template Analysis Assessment</h2>
+            <div class="quiz-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <span class="progress-text" id="progressText">Question 1 of 10</span>
+            </div>
+            
+            <form id="quizForm" role="form" aria-label="Knowledge assessment quiz">
+                <!-- Question 1: W3.CSS Framework -->
+                <div class="question-card" data-question="1">
+                    <div class="question-header">
+                        <h3>Question 1</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
                     <p class="question-text">What is the primary advantage of the W3.CSS framework compared to Bootstrap?</p>
-                    <div class="options" role="radiogroup" aria-labelledby="q1-legend">
+                    <div class="options" role="radiogroup" aria-labelledby="q1-label">
+                        <p id="q1-label" class="sr-only">Select the best answer</p>
                         <label class="option">
-                            <input type="radio" name="q1" value="a" aria-describedby="q1a-desc">
-                            <span class="option-text">It has more built-in JavaScript components</span>
-                            <div id="q1a-desc" class="sr-only">Option A: More JavaScript components</div>
+                            <input type="radio" name="q1" value="a" aria-describedby="q1-a-desc">
+                            <span class="option-text">It has more built-in components and widgets</span>
+                            <span id="q1-a-desc" class="sr-only">Option A</span>
                         </label>
                         <label class="option">
-                            <input type="radio" name="q1" value="b" aria-describedby="q1b-desc">
-                            <span class="option-text">It requires no JavaScript dependencies</span>
-                            <div id="q1b-desc" class="sr-only">Option B: No JavaScript dependencies</div>
+                            <input type="radio" name="q1" value="b" aria-describedby="q1-b-desc">
+                            <span class="option-text">It requires no JavaScript dependencies and is lighter</span>
+                            <span id="q1-b-desc" class="sr-only">Option B</span>
                         </label>
                         <label class="option">
-                            <input type="radio" name="q1" value="c" aria-describedby="q1c-desc">
-                            <span class="option-text">It has better browser compatibility</span>
-                            <div id="q1c-desc" class="sr-only">Option C: Better browser compatibility</div>
+                            <input type="radio" name="q1" value="c" aria-describedby="q1-c-desc">
+                            <span class="option-text">It has better cross-browser compatibility</span>
+                            <span id="q1-c-desc" class="sr-only">Option C</span>
                         </label>
                         <label class="option">
-                            <input type="radio" name="q1" value="d" aria-describedby="q1d-desc">
-                            <span class="option-text">It includes jQuery by default</span>
-                            <div id="q1d-desc" class="sr-only">Option D: Includes jQuery by default</div>
+                            <input type="radio" name="q1" value="d" aria-describedby="q1-d-desc">
+                            <span class="option-text">It includes jQuery by default for enhanced functionality</span>
+                            <span id="q1-d-desc" class="sr-only">Option D</span>
                         </label>
                     </div>
-                </fieldset>
+                </div>
 
                 <!-- Question 2: Grid System -->
-                <fieldset class="question-card" data-question="2">
-                    <legend>Question 2 (2 points) - Responsive Grid System</legend>
-                    <p class="question-text">In responsive design, what does the CSS class combination "w3-col l3 m6" achieve?</p>
-                    <div class="options" role="radiogroup">
+                <div class="question-card" data-question="2">
+                    <div class="question-header">
+                        <h3>Question 2</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
+                    <p class="question-text">In the W3.CSS grid system, what layout does the class combination "w3-col l3 m6" create?</p>
+                    <div class="options" role="radiogroup" aria-labelledby="q2-label">
+                        <p id="q2-label" class="sr-only">Select the best answer</p>
                         <label class="option">
                             <input type="radio" name="q2" value="a">
-                            <span class="option-text">3 columns on large screens, 6 on medium screens</span>
+                            <span class="option-text">3 columns on large screens, 6 columns on medium screens</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q2" value="b">
-                            <span class="option-text">25% width on large screens, 50% on medium screens</span>
+                            <span class="option-text">25% width on large screens, 50% width on medium screens</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q2" value="c">
-                            <span class="option-text">6 columns on large screens, 3 on medium screens</span>
+                            <span class="option-text">33% width on large screens, 60% width on medium screens</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q2" value="d">
-                            <span class="option-text">Fixed width of 300px on all screens</span>
+                            <span class="option-text">Fixed width of 300px on all screen sizes</span>
                         </label>
                     </div>
-                </fieldset>
+                </div>
 
                 <!-- Question 3: Mobile-First Design -->
-                <fieldset class="question-card" data-question="3">
-                    <legend>Question 3 (2 points) - Mobile-First Methodology</legend>
-                    <p class="question-text">What is the core principle of mobile-first responsive design?</p>
-                    <div class="options" role="radiogroup">
+                <div class="question-card" data-question="3">
+                    <div class="question-header">
+                        <h3>Question 3</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
+                    <p class="question-text">What is the mobile-first approach in responsive web design?</p>
+                    <div class="options" role="radiogroup" aria-labelledby="q3-label">
+                        <p id="q3-label" class="sr-only">Select the best answer</p>
                         <label class="option">
                             <input type="radio" name="q3" value="a">
-                            <span class="option-text">Designing exclusively for mobile devices</span>
+                            <span class="option-text">Designing exclusively for mobile devices and ignoring desktop</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q3" value="b">
-                            <span class="option-text">Starting with mobile styles and progressively enhancing for larger screens</span>
+                            <span class="option-text">Starting with mobile styles as the base and progressively enhancing for larger screens</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q3" value="c">
-                            <span class="option-text">Creating mobile versions after desktop design completion</span>
+                            <span class="option-text">Creating separate mobile versions after completing desktop design</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q3" value="d">
-                            <span class="option-text">Using only CSS properties supported by mobile browsers</span>
+                            <span class="option-text">Using only CSS properties specifically designed for mobile browsers</span>
                         </label>
                     </div>
-                </fieldset>
+                </div>
 
                 <!-- Question 4: Fill in the Blank -->
-                <fieldset class="question-card" data-question="4">
-                    <legend>Question 4 (2 points) - CSS Class Knowledge</legend>
+                <div class="question-card" data-question="4">
+                    <div class="question-header">
+                        <h3>Question 4</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
                     <p class="question-text">
-                        Complete the CSS class name: The W3.CSS class "w3-
-                        <label for="q4-input" class="sr-only">Fill in the missing word</label>
-                        <input type="text" id="q4-input" name="q4" class="fill-blank" 
-                               placeholder="answer" aria-describedby="q4-hint" maxlength="10" autocomplete="off">
-                        -small" is used to hide elements on small screens.
+                        Complete the W3.CSS class name: The class "w3-<input type="text" id="q4" name="q4" class="fill-blank" placeholder="answer" aria-label="Fill in the missing word">-small" is used to hide elements on small screens.
                     </p>
-                    <div id="q4-hint" class="hint">💡 Hint: This class makes elements disappear on mobile devices</div>
-                </fieldset>
+                    <div class="hint">
+                        <p>💡 <strong>Hint:</strong> This class makes elements disappear on mobile devices to create cleaner mobile layouts.</p>
+                    </div>
+                </div>
 
-                <!-- Question 5: Multiple Select -->
-                <fieldset class="question-card" data-question="5">
-                    <legend>Question 5 (2 points) - Semantic HTML Benefits</legend>
-                    <p class="question-text">Which of the following are benefits of semantic HTML5? (Select all that apply)</p>
-                    <div class="options" role="group" aria-labelledby="q5-legend">
+                <!-- Question 5: Multiple Answers -->
+                <div class="question-card" data-question="5">
+                    <div class="question-header">
+                        <h3>Question 5</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
+                    <p class="question-text">Which of the following are benefits of using semantic HTML5 elements? (Select all that apply)</p>
+                    <div class="options" role="group" aria-labelledby="q5-label">
+                        <p id="q5-label" class="sr-only">Select all correct answers</p>
                         <label class="option checkbox-option">
                             <input type="checkbox" name="q5" value="a">
-                            <span class="option-text">Improved accessibility for screen readers</span>
+                            <span class="option-text">Improved accessibility for screen readers and assistive technologies</span>
                         </label>
                         <label class="option checkbox-option">
                             <input type="checkbox" name="q5" value="b">
-                            <span class="option-text">Better SEO optimization and search rankings</span>
+                            <span class="option-text">Better SEO optimization and search engine understanding</span>
                         </label>
                         <label class="option checkbox-option">
                             <input type="checkbox" name="q5" value="c">
@@ -1238,202 +249,172 @@
                         </label>
                         <label class="option checkbox-option">
                             <input type="checkbox" name="q5" value="d">
-                            <span class="option-text">Clearer code structure and maintainability</span>
+                            <span class="option-text">Clearer code structure and enhanced maintainability</span>
                         </label>
                     </div>
-                </fieldset>
+                </div>
 
                 <!-- Question 6: Performance -->
-                <fieldset class="question-card" data-question="6">
-                    <legend>Question 6 (2 points) - Performance Optimization</legend>
-                    <p class="question-text">Which technique is most effective for optimizing images in responsive design?</p>
-                    <div class="options" role="radiogroup">
+                <div class="question-card" data-question="6">
+                    <div class="question-header">
+                        <h3>Question 6</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
+                    <p class="question-text">According to our analysis, what is the approximate file size of the W3.CSS framework?</p>
+                    <div class="options" role="radiogroup" aria-labelledby="q6-label">
+                        <p id="q6-label" class="sr-only">Select the best answer</p>
                         <label class="option">
                             <input type="radio" name="q6" value="a">
-                            <span class="option-text">Using the same high-resolution image for all devices</span>
+                            <span class="option-text">~50KB (similar to Bootstrap)</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q6" value="b">
-                            <span class="option-text">Implementing responsive images with srcset and sizes attributes</span>
+                            <span class="option-text">~20KB (significantly lighter than Bootstrap)</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q6" value="c">
-                            <span class="option-text">Compressing all images to the lowest quality</span>
+                            <span class="option-text">~8KB (ultra-lightweight framework)</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q6" value="d">
-                            <span class="option-text">Using only vector graphics for all content</span>
+                            <span class="option-text">~100KB (feature-rich comprehensive framework)</span>
                         </label>
                     </div>
-                </fieldset>
+                </div>
 
-                <!-- Question 7: Accessibility -->
-                <fieldset class="question-card" data-question="7">
-                    <legend>Question 7 (2 points) - Web Accessibility</legend>
-                    <p class="question-text">What is the minimum touch target size recommended for mobile accessibility?</p>
-                    <div class="options" role="radiogroup">
+                <!-- Question 7: ARIA and Accessibility -->
+                <div class="question-card" data-question="7">
+                    <div class="question-header">
+                        <h3>Question 7</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
+                    <p class="question-text">What does ARIA stand for in the context of web accessibility?</p>
+                    <div class="options" role="radiogroup" aria-labelledby="q7-label">
+                        <p id="q7-label" class="sr-only">Select the best answer</p>
                         <label class="option">
                             <input type="radio" name="q7" value="a">
-                            <span class="option-text">24px × 24px</span>
+                            <span class="option-text">Advanced Responsive Internet Applications</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q7" value="b">
-                            <span class="option-text">32px × 32px</span>
+                            <span class="option-text">Accessible Rich Internet Applications</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q7" value="c">
-                            <span class="option-text">44px × 44px</span>
+                            <span class="option-text">Automated Responsive Interface Architecture</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q7" value="d">
-                            <span class="option-text">60px × 60px</span>
+                            <span class="option-text">Application Resource Integration API</span>
                         </label>
                     </div>
-                </fieldset>
+                </div>
 
-                <!-- Question 8: CSS Grid -->
-                <fieldset class="question-card" data-question="8">
-                    <legend>Question 8 (2 points) - Modern CSS Layout</legend>
-                    <p class="question-text">Which CSS property creates a responsive grid that automatically fits items based on available space?</p>
-                    <div class="options" role="radiogroup">
-                        <label class="option">
-                            <input type="radio" name="q8" value="a">
-                            <span class="option-text">grid-template-columns: repeat(3, 1fr)</span>
+                <!-- Question 8: CSS Breakpoints -->
+                <div class="question-card" data-question="8">
+                    <div class="question-header">
+                        <h3>Question 8</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
+                    <p class="question-text">Which CSS breakpoints are commonly used in the responsive design analysis? (Select all that apply)</p>
+                    <div class="options" role="group" aria-labelledby="q8-label">
+                        <p id="q8-label" class="sr-only">Select all correct answers</p>
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q8" value="a">
+                            <span class="option-text">768px for tablet devices</span>
                         </label>
-                        <label class="option">
-                            <input type="radio" name="q8" value="b">
-                            <span class="option-text">grid-template-columns: repeat(auto-fit, minmax(250px, 1fr))</span>
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q8" value="b">
+                            <span class="option-text">1024px for desktop screens</span>
                         </label>
-                        <label class="option">
-                            <input type="radio" name="q8" value="c">
-                            <span class="option-text">display: flex; flex-wrap: wrap</span>
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q8" value="c">
+                            <span class="option-text">480px for small mobile devices</span>
                         </label>
-                        <label class="option">
-                            <input type="radio" name="q8" value="d">
-                            <span class="option-text">grid-template-columns: 25% 25% 25% 25%</span>
+                        <label class="option checkbox-option">
+                            <input type="checkbox" name="q8" value="d">
+                            <span class="option-text">1400px for large desktop displays</span>
                         </label>
                     </div>
-                </fieldset>
+                </div>
 
-                <!-- Question 9: Multiple Select - Best Practices -->
-                <fieldset class="question-card" data-question="9">
-                    <legend>Question 9 (2 points) - Responsive Design Best Practices</legend>
-                    <p class="question-text">Which are essential components of mobile-first responsive design? (Select all that apply)</p>
-                    <div class="options" role="group">
-                        <label class="option checkbox-option">
-                            <input type="checkbox" name="q9" value="a">
-                            <span class="option-text">Progressive enhancement of features</span>
-                        </label>
-                        <label class="option checkbox-option">
-                            <input type="checkbox" name="q9" value="b">
-                            <span class="option-text">Min-width media queries</span>
-                        </label>
-                        <label class="option checkbox-option">
-                            <input type="checkbox" name="q9" value="c">
-                            <span class="option-text">Desktop-first design approach</span>
-                        </label>
-                        <label class="option checkbox-option">
-                            <input type="checkbox" name="q9" value="d">
-                            <span class="option-text">Touch-friendly interface elements</span>
-                        </label>
-                        <label class="option checkbox-option">
-                            <input type="checkbox" name="q9" value="e">
-                            <span class="option-text">Content prioritization for mobile</span>
-                        </label>
+                <!-- Question 9: Template Structure -->
+                <div class="question-card" data-question="9">
+                    <div class="question-header">
+                        <h3>Question 9</h3>
+                        <span class="question-points">2 points</span>
                     </div>
-                </fieldset>
+                    <p class="question-text">Fill in the missing HTML5 semantic element: The &lt;<input type="text" id="q9" name="q9" class="fill-blank" placeholder="element" aria-label="HTML element name">&gt; element should be used to wrap the main content of a web page.</p>
+                    <div class="hint">
+                        <p>💡 <strong>Hint:</strong> This element identifies the primary content area and is important for accessibility and screen readers.</p>
+                    </div>
+                </div>
 
-                <!-- Question 10: Framework Comparison -->
-                <fieldset class="question-card" data-question="10">
-                    <legend>Question 10 (2 points) - Framework Analysis</legend>
-                    <p class="question-text">Based on our analysis, what is the approximate file size advantage of W3.CSS over Bootstrap?</p>
-                    <div class="options" role="radiogroup">
+                <!-- Question 10: Best Practices -->
+                <div class="question-card" data-question="10">
+                    <div class="question-header">
+                        <h3>Question 10</h3>
+                        <span class="question-points">2 points</span>
+                    </div>
+                    <p class="question-text">According to our analysis, what is the overall rating given to the W3Schools Architect Template?</p>
+                    <div class="options" role="radiogroup" aria-labelledby="q10-label">
+                        <p id="q10-label" class="sr-only">Select the best answer</p>
                         <label class="option">
                             <input type="radio" name="q10" value="a">
-                            <span class="option-text">W3.CSS is about 20% smaller</span>
+                            <span class="option-text">7.5/10 - Good with room for improvement</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q10" value="b">
-                            <span class="option-text">W3.CSS is about 40% smaller</span>
+                            <span class="option-text">8.5/10 - Very good implementation</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q10" value="c">
-                            <span class="option-text">W3.CSS is about 60% smaller</span>
+                            <span class="option-text">9.5/10 - Excellent modern template</span>
                         </label>
                         <label class="option">
                             <input type="radio" name="q10" value="d">
-                            <span class="option-text">Both frameworks are approximately the same size</span>
+                            <span class="option-text">6.0/10 - Adequate but needs significant updates</span>
                         </label>
                     </div>
-                </fieldset>
-
-                <!-- Quiz Navigation -->
-                <div class="quiz-navigation">
-                    <button type="button" id="prevBtn" class="nav-btn" disabled aria-label="Previous question">
-                        ← Previous
-                    </button>
-                    <div class="question-indicator" id="questionIndicator">
-                        <!-- Question dots will be generated by JavaScript -->
-                    </div>
-                    <button type="button" id="nextBtn" class="nav-btn" aria-label="Next question">
-                        Next →
-                    </button>
                 </div>
 
-                <!-- Submit Button -->
-                <div class="quiz-actions" style="display: none;" id="quizActions">
-                    <button type="submit" class="submit-btn" aria-describedby="submit-help">
-                        📊 Submit Quiz for Grading
-                    </button>
-                    <div id="submit-help" class="form-help">Review your answers before submitting</div>
+                <div class="quiz-actions">
+                    <button type="submit" class="submit-btn">Submit Assessment</button>
+                    <button type="button" id="resetQuiz" class="reset-btn">Reset All Answers</button>
                 </div>
             </form>
         </section>
 
         <!-- Results Section -->
         <section class="quiz-results" id="quizResults" style="display: none;" aria-labelledby="results-heading">
-            <header class="results-header">
-                <h2 id="results-heading">Quiz Results & Performance Analysis</h2>
+            <div class="results-header">
+                <h2 id="results-heading">Assessment Results</h2>
                 <div class="score-display">
-                    <div class="score-circle">
+                    <div class="score-container">
                         <div class="total-score">
                             <span id="finalScore">0</span> / <span id="totalPoints">20</span>
                         </div>
                         <div class="percentage">
                             <span id="percentage">0%</span>
                         </div>
+                        <div class="pass-fail">
+                            <span id="passFailResult">-</span>
+                        </div>
                     </div>
-                    <div class="pass-fail-indicator">
-                        <span id="passFailResult" class="result-badge">-</span>
-                        <div id="performanceLevel" class="performance-text">-</div>
+                    <div class="score-interpretation">
+                        <p id="scoreMessage">Your performance interpretation will appear here.</p>
                     </div>
                 </div>
-            </header>
+            </div>
 
-            <!-- Detailed Results -->
-            <div class="detailed-results" id="detailedResults">
+            <div class="detailed-results" id="detailedResults" role="region" aria-label="Detailed question results">
                 <!-- Results will be populated by JavaScript -->
             </div>
 
-            <!-- Performance Insights -->
-            <div class="performance-insights" id="performanceInsights">
-                <h3>📈 Learning Insights & Recommendations</h3>
-                <div id="insightsContent">
-                    <!-- Performance insights will be generated -->
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
             <div class="results-actions">
-                <button id="retakeQuiz" class="retake-btn" aria-label="Retake quiz to improve score">
-                    🔄 Retake Quiz
-                </button>
-                <button id="reviewAnswers" class="review-btn" aria-label="Review all answers and explanations">
-                    📖 Review Answers
-                </button>
-                <a href="index.html" class="home-btn" aria-label="Return to home page">
-                    🏠 Return Home
-                </a>
+                <button id="retakeQuiz" class="retake-btn">Retake Assessment</button>
+                <a href="index.html" class="home-btn">Return to Home</a>
+                <button id="printResults" class="print-btn">Print Results</button>
             </div>
         </section>
     </main>
@@ -1446,108 +427,91 @@
         </div>
     </footer>
 
-    <!-- Enhanced Quiz JavaScript -->
+    <!-- JavaScript for Quiz Functionality -->
     <script>
-        // Enhanced Quiz Data with detailed explanations
+        // Quiz Data and Correct Answers
         const quizData = {
             q1: { 
                 correct: 'b', 
                 points: 2,
-                explanation: 'W3.CSS is designed as a pure CSS framework without JavaScript dependencies, making it lighter and faster than Bootstrap which often relies on jQuery and JavaScript components for full functionality.',
-                topic: 'CSS Framework Architecture'
+                explanation: 'W3.CSS requires no JavaScript dependencies and has a much smaller file size (~20KB) compared to Bootstrap (~50KB), making it lighter and faster to load.'
             },
             q2: { 
                 correct: 'b', 
                 points: 2,
-                explanation: 'In W3.CSS grid system, "l3" means 3/12 = 25% width on large screens (≥992px), and "m6" means 6/12 = 50% width on medium screens (601px-992px). This creates responsive behavior where content adapts to different screen sizes.',
-                topic: 'Responsive Grid Systems'
+                explanation: 'In W3.CSS grid system, "l3" means 3/12 = 25% width on large screens, and "m6" means 6/12 = 50% width on medium screens.'
             },
             q3: { 
                 correct: 'b', 
                 points: 2,
-                explanation: 'Mobile-first design starts with styles optimized for mobile devices as the baseline, then uses min-width media queries to progressively enhance the design for larger screens. This approach ensures optimal performance and user experience on mobile devices.',
-                topic: 'Mobile-First Design'
+                explanation: 'Mobile-first approach means starting with base styles optimized for mobile devices and then progressively enhancing the design for larger screens using min-width media queries.'
             },
             q4: { 
                 correct: 'hide', 
                 points: 2,
-                explanation: 'The W3.CSS class "w3-hide-small" hides elements on small screens (typically mobile devices with screen width < 601px). This is commonly used to hide less important content on mobile to prioritize essential information.',
-                topic: 'Responsive Utility Classes'
+                explanation: 'The class "w3-hide-small" is used to hide elements on small screens (mobile devices), creating cleaner mobile layouts by removing unnecessary content.'
             },
             q5: { 
                 correct: ['a', 'b', 'd'], 
                 points: 2,
-                explanation: 'Semantic HTML improves accessibility by providing meaningful structure for screen readers, enhances SEO by helping search engines understand content hierarchy, and creates clearer, more maintainable code. While it can contribute to performance indirectly, it doesn\'t directly provide "significantly faster" loading times.',
-                topic: 'HTML5 Semantics'
+                explanation: 'Semantic HTML improves accessibility for screen readers, enhances SEO optimization, and creates clearer code structure. It doesn\'t directly impact loading times significantly.'
             },
             q6: { 
                 correct: 'b', 
                 points: 2,
-                explanation: 'Responsive images using srcset and sizes attributes allow browsers to select the most appropriate image size for each device, significantly improving performance by reducing unnecessary data transfer while maintaining visual quality.',
-                topic: 'Performance Optimization'
+                explanation: 'According to our analysis, W3.CSS is approximately 20KB in size, making it significantly lighter than Bootstrap (50KB) and other major CSS frameworks.'
             },
             q7: { 
-                correct: 'c', 
-                points: 2,
-                explanation: 'The recommended minimum touch target size is 44px × 44px, based on Apple\'s iOS Human Interface Guidelines and supported by Android accessibility guidelines. This ensures comfortable interaction for users with varying finger sizes and motor abilities.',
-                topic: 'Mobile Accessibility'
-            },
-            q8: { 
                 correct: 'b', 
                 points: 2,
-                explanation: 'The CSS Grid property "repeat(auto-fit, minmax(250px, 1fr))" creates a truly responsive grid that automatically adjusts the number of columns based on available space, with each column being at least 250px wide but expanding to fill remaining space.',
-                topic: 'Modern CSS Layout'
+                explanation: 'ARIA stands for Accessible Rich Internet Applications. It provides semantic information to assistive technologies about the meaning and behavior of elements.'
+            },
+            q8: { 
+                correct: ['a', 'b', 'd'], 
+                points: 2,
+                explanation: 'Common responsive breakpoints include 768px (tablet), 1024px (desktop), and 1400px (large desktop). 480px is less commonly used in modern responsive design.'
             },
             q9: { 
-                correct: ['a', 'b', 'd', 'e'], 
+                correct: 'main', 
                 points: 2,
-                explanation: 'Mobile-first responsive design includes progressive enhancement (starting simple and adding features), min-width media queries (building up from mobile), touch-friendly elements, and content prioritization. Desktop-first approach contradicts mobile-first methodology.',
-                topic: 'Responsive Design Best Practices'
+                explanation: 'The <main> element should wrap the main content of a page. It helps screen readers and other assistive technologies identify the primary content area.'
             },
             q10: { 
-                correct: 'c', 
+                correct: 'b', 
                 points: 2,
-                explanation: 'Based on our analysis, W3.CSS (~20KB) is approximately 60% smaller than Bootstrap (~50KB), making it a more lightweight option for projects that don\'t require Bootstrap\'s extensive component library.',
-                topic: 'Framework Comparison'
+                explanation: 'Our comprehensive analysis gave the W3Schools Architect Template an overall rating of 8.5/10, indicating very good implementation with some opportunities for modern enhancements.'
             }
         };
-
-        // Quiz state management
-        let currentQuestionIndex = 0;
-        let userAnswers = {};
-        let quizStartTime = null;
-        let quizAttempts = parseInt(localStorage.getItem('quizAttempts') || '0');
 
         // DOM Elements
         const instructionsSection = document.getElementById('instructions');
         const quizContainer = document.getElementById('quizContainer');
-        const quizProgress = document.getElementById('quizProgress');
         const quizResults = document.getElementById('quizResults');
         const startQuizBtn = document.getElementById('startQuiz');
         const quizForm = document.getElementById('quizForm');
+        const resetQuizBtn = document.getElementById('resetQuiz');
         const retakeQuizBtn = document.getElementById('retakeQuiz');
-        const reviewAnswersBtn = document.getElementById('reviewAnswers');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const quizActions = document.getElementById('quizActions');
+        const printResultsBtn = document.getElementById('printResults');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
 
-        // Question elements
-        const questionCards = document.querySelectorAll('.question-card');
-        const totalQuestions = questionCards.length;
+        let currentQuestion = 1;
+        const totalQuestions = 10;
 
-        // Initialize quiz
+        // Initialize Quiz
         document.addEventListener('DOMContentLoaded', function() {
-            // Mobile menu functionality
-            initializeMobileMenu();
-            
-            // Initialize quiz controls
-            initializeQuiz();
-            
-            // Set up accessibility features
-            setupAccessibility();
+            setupEventListeners();
+            setupProgressTracking();
         });
 
-        function initializeMobileMenu() {
+        function setupEventListeners() {
+            startQuizBtn.addEventListener('click', startQuiz);
+            resetQuizBtn.addEventListener('click', resetForm);
+            retakeQuizBtn.addEventListener('click', retakeQuiz);
+            printResultsBtn.addEventListener('click', printResults);
+            quizForm.addEventListener('submit', submitQuiz);
+            
+            // Mobile menu functionality
             const menuToggle = document.querySelector('.menu-toggle');
             const navMenu = document.querySelector('.nav-menu');
             
@@ -1577,18 +541,350 @@
                     });
                 });
             }
+            
+            // Skip link functionality
+            const skipLink = document.querySelector('.skip-link');
+            if (skipLink) {
+                skipLink.addEventListener('focus', function() {
+                    this.style.left = '10px';
+                    this.style.top = '10px';
+                });
+                
+                skipLink.addEventListener('blur', function() {
+                    this.style.left = '-9999px';
+                    this.style.top = '-9999px';
+                });
+            }
         }
 
-        function initializeQuiz() {
-            // Start Quiz
-            startQuizBtn.addEventListener('click', startQuiz);
+        function setupProgressTracking() {
+            // Track progress through questions
+            const questionCards = document.querySelectorAll('.question-card');
+            const options = document.querySelectorAll('input[type="radio"], input[type="checkbox"], input[type="text"]');
             
-            // Navigation buttons
-            prevBtn.addEventListener('click', previousQuestion);
-            nextBtn.addEventListener('click', nextQuestion);
+            options.forEach(input => {
+                input.addEventListener('change', updateProgress);
+                input.addEventListener('input', updateProgress);
+            });
+        }
+
+        function updateProgress() {
+            const answeredQuestions = getAnsweredQuestions();
+            const progressPercentage = (answeredQuestions / totalQuestions) * 100;
             
-            // Quiz form submission
-            quizForm.addEventListener('submit', submitQuiz);
+            progressFill.style.width = progressPercentage + '%';
+            progressText.textContent = `${answeredQuestions} of ${totalQuestions} questions answered`;
+        }
+
+        function getAnsweredQuestions() {
+            let answered = 0;
             
-            // Retake functionality
-            retakeQuizBtn
+            // Check radio button questions
+            for (let i = 1; i <= 10; i++) {
+                if (i === 4 || i === 9) continue; // Skip fill-in-blank questions
+                if (i === 5 || i === 8) continue; // Skip checkbox questions for now
+                
+                const radio = document.querySelector(`input[name="q${i}"]:checked`);
+                if (radio) answered++;
+            }
+            
+            // Check checkbox questions
+            const q5Checked = document.querySelectorAll('input[name="q5"]:checked');
+            const q8Checked = document.querySelectorAll('input[name="q8"]:checked');
+            if (q5Checked.length > 0) answered++;
+            if (q8Checked.length > 0) answered++;
+            
+            // Check fill-in-blank questions
+            const q4Value = document.getElementById('q4').value.trim();
+            const q9Value = document.getElementById('q9').value.trim();
+            if (q4Value) answered++;
+            if (q9Value) answered++;
+            
+            return answered;
+        }
+
+        function startQuiz() {
+            instructionsSection.style.display = 'none';
+            quizContainer.style.display = 'block';
+            quizResults.style.display = 'none';
+            resetForm();
+            updateProgress();
+            
+            // Focus on first question for accessibility
+            const firstQuestion = document.querySelector('.question-card');
+            if (firstQuestion) {
+                firstQuestion.scrollIntoView({ behavior: 'smooth' });
+                const firstInput = firstQuestion.querySelector('input');
+                if (firstInput) {
+                    setTimeout(() => firstInput.focus(), 500);
+                }
+            }
+        }
+
+        function resetForm() {
+            quizForm.reset();
+            currentQuestion = 1;
+            
+            // Clear any previous result styling
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.classList.remove('correct', 'incorrect');
+            });
+            
+            // Reset progress
+            progressFill.style.width = '0%';
+            progressText.textContent = `0 of ${totalQuestions} questions answered`;
+        }
+
+        function retakeQuiz() {
+            instructionsSection.style.display = 'block';
+            quizContainer.style.display = 'none';
+            quizResults.style.display = 'none';
+            resetForm();
+            
+            // Scroll back to top
+            instructionsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function printResults() {
+            window.print();
+        }
+
+        function submitQuiz(e) {
+            e.preventDefault();
+            
+            let totalScore = 0;
+            let results = [];
+
+            // Question 1
+            const q1Answer = document.querySelector('input[name="q1"]:checked');
+            const q1Result = checkSingleChoice('q1', q1Answer ? q1Answer.value : null);
+            results.push(q1Result);
+            totalScore += q1Result.earned;
+
+            // Question 2
+            const q2Answer = document.querySelector('input[name="q2"]:checked');
+            const q2Result = checkSingleChoice('q2', q2Answer ? q2Answer.value : null);
+            results.push(q2Result);
+            totalScore += q2Result.earned;
+
+            // Question 3
+            const q3Answer = document.querySelector('input[name="q3"]:checked');
+            const q3Result = checkSingleChoice('q3', q3Answer ? q3Answer.value : null);
+            results.push(q3Result);
+            totalScore += q3Result.earned;
+
+            // Question 4 (Fill in blank)
+            const q4Answer = document.getElementById('q4').value.trim().toLowerCase();
+            const q4Result = checkFillBlank('q4', q4Answer);
+            results.push(q4Result);
+            totalScore += q4Result.earned;
+
+            // Question 5 (Multiple correct)
+            const q5Answers = Array.from(document.querySelectorAll('input[name="q5"]:checked')).map(input => input.value);
+            const q5Result = checkMultipleChoice('q5', q5Answers);
+            results.push(q5Result);
+            totalScore += q5Result.earned;
+
+            // Question 6
+            const q6Answer = document.querySelector('input[name="q6"]:checked');
+            const q6Result = checkSingleChoice('q6', q6Answer ? q6Answer.value : null);
+            results.push(q6Result);
+            totalScore += q6Result.earned;
+
+            // Question 7
+            const q7Answer = document.querySelector('input[name="q7"]:checked');
+            const q7Result = checkSingleChoice('q7', q7Answer ? q7Answer.value : null);
+            results.push(q7Result);
+            totalScore += q7Result.earned;
+
+            // Question 8 (Multiple correct)
+            const q8Answers = Array.from(document.querySelectorAll('input[name="q8"]:checked')).map(input => input.value);
+            const q8Result = checkMultipleChoice('q8', q8Answers);
+            results.push(q8Result);
+            totalScore += q8Result.earned;
+
+            // Question 9 (Fill in blank)
+            const q9Answer = document.getElementById('q9').value.trim().toLowerCase();
+            const q9Result = checkFillBlank('q9', q9Answer);
+            results.push(q9Result);
+            totalScore += q9Result.earned;
+
+            // Question 10
+            const q10Answer = document.querySelector('input[name="q10"]:checked');
+            const q10Result = checkSingleChoice('q10', q10Answer ? q10Answer.value : null);
+            results.push(q10Result);
+            totalScore += q10Result.earned;
+
+            // Display Results
+            displayResults(totalScore, results);
+        }
+
+        function checkSingleChoice(questionId, userAnswer) {
+            const correct = quizData[questionId].correct;
+            const points = quizData[questionId].points;
+            const isCorrect = userAnswer === correct;
+            
+            return {
+                question: questionId,
+                userAnswer: userAnswer || 'No answer selected',
+                correctAnswer: correct,
+                isCorrect: isCorrect,
+                earned: isCorrect ? points : 0,
+                total: points,
+                explanation: quizData[questionId].explanation
+            };
+        }
+
+        function checkFillBlank(questionId, userAnswer) {
+            const correct = quizData[questionId].correct;
+            const points = quizData[questionId].points;
+            const isCorrect = userAnswer === correct;
+            
+            return {
+                question: questionId,
+                userAnswer: userAnswer || 'No answer provided',
+                correctAnswer: correct,
+                isCorrect: isCorrect,
+                earned: isCorrect ? points : 0,
+                total: points,
+                explanation: quizData[questionId].explanation
+            };
+        }
+
+        function checkMultipleChoice(questionId, userAnswers) {
+            const correct = quizData[questionId].correct;
+            const points = quizData[questionId].points;
+            
+            // Check if arrays are equal (same length and same elements)
+            const sortedUser = userAnswers.sort();
+            const sortedCorrect = [...correct].sort();
+            const isCorrect = sortedUser.length === sortedCorrect.length && 
+                             sortedUser.every((val, index) => val === sortedCorrect[index]);
+            
+            return {
+                question: questionId,
+                userAnswer: userAnswers.length > 0 ? userAnswers.join(', ') : 'No answers selected',
+                correctAnswer: correct.join(', '),
+                isCorrect: isCorrect,
+                earned: isCorrect ? points : 0,
+                total: points,
+                explanation: quizData[questionId].explanation
+            };
+        }
+
+        function displayResults(totalScore, results) {
+            const totalPoints = 20;
+            const percentage = Math.round((totalScore / totalPoints) * 100);
+            const passed = percentage >= 70;
+
+            // Update score display
+            document.getElementById('finalScore').textContent = totalScore;
+            document.getElementById('totalPoints').textContent = totalPoints;
+            document.getElementById('percentage').textContent = percentage + '%';
+            
+            const passFailElement = document.getElementById('passFailResult');
+            passFailElement.textContent = passed ? '✅ PASSED' : '❌ FAILED';
+            passFailElement.className = passed ? 'pass' : 'fail';
+
+            // Set score interpretation message
+            const scoreMessage = document.getElementById('scoreMessage');
+            if (percentage >= 90) {
+                scoreMessage.textContent = 'Excellent! You have a strong understanding of the material.';
+                scoreMessage.className = 'excellent';
+            } else if (percentage >= 80) {
+                scoreMessage.textContent = 'Very good! You understand most concepts well.';
+                scoreMessage.className = 'good';
+            } else if (percentage >= 70) {
+                scoreMessage.textContent = 'Good job! You passed with a solid understanding.';
+                scoreMessage.className = 'pass';
+            } else {
+                scoreMessage.textContent = 'You may want to review the material and try again.';
+                scoreMessage.className = 'fail';
+            }
+
+            // Create detailed results
+            const detailedResults = document.getElementById('detailedResults');
+            detailedResults.innerHTML = '';
+
+            const questionTitles = [
+                'W3.CSS Framework Advantages',
+                'Grid System Implementation',
+                'Mobile-First Design Approach',
+                'CSS Class Completion',
+                'Semantic HTML Benefits',
+                'Framework Performance Metrics',
+                'ARIA Accessibility Standards',
+                'Responsive Design Breakpoints',
+                'HTML5 Semantic Elements',
+                'Template Overall Assessment'
+            ];
+
+            results.forEach((result, index) => {
+                const resultCard = document.createElement('article');
+                resultCard.className = `result-card ${result.isCorrect ? 'correct' : 'incorrect'}`;
+                resultCard.setAttribute('role', 'region');
+                resultCard.setAttribute('aria-label', `Question ${index + 1} result`);
+                
+                resultCard.innerHTML = `
+                    <div class="result-header">
+                        <h4>Question ${index + 1}: ${questionTitles[index]}</h4>
+                        <div class="result-score">
+                            <span class="points">${result.earned}/${result.total} points</span>
+                            <span class="result-status" aria-label="${result.isCorrect ? 'Correct' : 'Incorrect'}">${result.isCorrect ? '✅' : '❌'}</span>
+                        </div>
+                    </div>
+                    <div class="result-details">
+                        <div class="answer-comparison">
+                            <div class="user-answer">
+                                <strong>Your answer:</strong> ${result.userAnswer}
+                            </div>
+                            <div class="correct-answer">
+                                <strong>Correct answer:</strong> ${result.correctAnswer}
+                            </div>
+                        </div>
+                        <div class="explanation">
+                            <strong>Explanation:</strong> ${result.explanation}
+                        </div>
+                    </div>
+                `;
+                
+                detailedResults.appendChild(resultCard);
+            });
+
+            // Show results, hide quiz
+            quizContainer.style.display = 'none';
+            quizResults.style.display = 'block';
+            
+            // Scroll to results with smooth animation
+            setTimeout(() => {
+                quizResults.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+
+            // Announce results to screen readers
+            const announcement = `Quiz completed. You scored ${totalScore} out of ${totalPoints} points, ${percentage}%. ${passed ? 'You passed the assessment.' : 'You did not pass the assessment.'}`;
+            announceToScreenReader(announcement);
+        }
+
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+
+        // Enhanced keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.type === 'radio') {
+                e.target.checked = true;
+                e.target.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+</body>
+</html>
