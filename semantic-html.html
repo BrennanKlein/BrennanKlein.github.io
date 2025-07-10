@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Analysis of HTML5 semantic structure, accessibility features, and document organization in the W3Schools Architect Template.">
+    <title>Semantic HTML Analysis - W3Schools Template Study</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Skip to main content -->
+    <a href="#main-content" class="skip-link" style="position: absolute; left: -9999px; top: -9999px; z-index: 999; padding: 8px 16px; background: #000; color: #fff; text-decoration: none;">Skip to main content</a>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <div class="logo">
+                <h1>Template Analysis</h1>
+            </div>
+            
+            <button class="menu-toggle" aria-label="Toggle mobile menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-menu" role="menubar">
+                <li role="none"><a href="index.html" class="nav-link" role="menuitem">Home</a></li>
+                <li role="none"><a href="framework-analysis.html" class="nav-link" role="menuitem">Framework Analysis</a></li>
+                <li role="none"><a href="responsive-design.html" class="nav-link" role="menuitem">Responsive Design</a></li>
+                <li role="none"><a href="semantic-html.html" class="nav-link active" role="menuitem" aria-current="page">Semantic HTML</a></li>
+                <li role="none"><a href="references.html" class="nav-link" role="menuitem">References</a></li>
+                <li role="none"><a href="quiz.html" class="nav-link" role="menuitem">Quiz</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);" role="banner">
+        <div class="container">
+            <h1>Semantic HTML5 Structure Analysis</h1>
+            <p class="page-subtitle">Document outline, accessibility features, and semantic markup evaluation</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="container" role="main">
+        <!-- HTML5 Semantic Overview -->
+        <section aria-labelledby="semantic-overview-heading">
+            <h2 id="semantic-overview-heading">HTML5 Semantic Elements Overview</h2>
+            <p>HTML5 introduced semantic elements that provide meaning to the structure of web documents. These elements improve accessibility, SEO, and code maintainability by clearly defining the purpose of different sections.</p>
+            
+            <h3>Current Template Structure Analysis</h3>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>✅ What the Template Does Well</h4>
+                    <ul>
+                        <li>Uses proper document structure with DOCTYPE</li>
+                        <li>Implements basic heading hierarchy (h1, h2, h3)</li>
+                        <li>Includes descriptive alt text for images</li>
+                        <li>Uses meaningful link text</li>
+                        <li>Proper form labeling with placeholders</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h4>🔧 Areas for Improvement</h4>
+                    <ul>
+                        <li>Limited use of HTML5 semantic elements</li>
+                        <li>Missing ARIA attributes for enhanced accessibility</li>
+                        <li>No proper landmark navigation</li>
+                        <li>Inconsistent heading hierarchy in some sections</li>
+                        <li>Lack of skip navigation links</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Document Structure Comparison -->
+        <section aria-labelledby="structure-comparison-heading">
+            <h2 id="structure-comparison-heading">Document Structure: Current vs. Recommended</h2>
+            
+            <h3>Current Template Structure</h3>
+            <div class="code-block">
+                <h4>Existing HTML Structure</h4>
+                <pre><code>&lt;!-- Current Template Structure --&gt;
+&lt;div class="w3-top"&gt;
+  &lt;div class="w3-bar w3-white w3-wide w3-padding w3-card"&gt;
+    &lt;a href="#home" class="w3-bar-item w3-button"&gt;&lt;b&gt;BR&lt;/b&gt; Architects&lt;/a&gt;
+    &lt;div class="w3-right w3-hide-small"&gt;
+      &lt;a href="#projects" class="w3-bar-item w3-button"&gt;Projects&lt;/a&gt;
+      &lt;a href="#about" class="w3-bar-item w3-button"&gt;About&lt;/a&gt;
+      &lt;a href="#contact" class="w3-bar-item w3-button"&gt;Contact&lt;/a&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="w3-display-container w3-content w3-wide" style="max-width:1500px;" id="home"&gt;
+  &lt;img class="w3-image" src="/w3images/architect.jpg" alt="Architecture" width="1500" height="800"&gt;
+  &lt;div class="w3-display-middle w3-margin-top w3-center"&gt;
+    &lt;h1 class="w3-xxlarge w3-text-white"&gt;&lt;span class="w3-padding w3-black w3-opacity-min"&gt;&lt;b&gt;BR&lt;/b&gt;&lt;/span&gt; &lt;span class="w3-hide-small w3-text-light-grey"&gt;Architects&lt;/span&gt;&lt;/h1&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="w3-content w3-padding" style="max-width:1564px" id="projects"&gt;
+  &lt;h3 class="w3-border-bottom w3-border-light-grey w3-padding-16"&gt;Projects&lt;/h3&gt;
+&lt;/div&gt;</code></pre>
+            </div>
+
+            <h3>Recommended Semantic Structure</h3>
+            <div class="code-block">
+                <h4>Improved Semantic HTML5 Structure</h4>
+                <pre><code>&lt;!-- Recommended Semantic Structure --&gt;
+&lt;header role="banner"&gt;
+  &lt;nav role="navigation" aria-label="Main navigation"&gt;
+    &lt;div class="nav-container"&gt;
+      &lt;div class="logo"&gt;
+        &lt;h1&gt;BR Architects&lt;/h1&gt;
+      &lt;/div&gt;
+      &lt;ul role="menubar"&gt;
+        &lt;li role="none"&gt;&lt;a href="#projects" role="menuitem"&gt;Projects&lt;/a&gt;&lt;/li&gt;
+        &lt;li role="none"&gt;&lt;a href="#about" role="menuitem"&gt;About&lt;/a&gt;&lt;/li&gt;
+        &lt;li role="none"&gt;&lt;a href="#contact" role="menuitem"&gt;Contact&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/nav&gt;
+  
+  &lt;section class="hero" aria-labelledby="hero-heading"&gt;
+    &lt;img src="/w3images/architect.jpg" alt="Modern architectural building showcasing BR Architects' design philosophy"&gt;
+    &lt;div class="hero-content"&gt;
+      &lt;h1 id="hero-heading"&gt;BR Architects&lt;/h1&gt;
+      &lt;p&gt;Innovative architectural solutions for modern living&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+&lt;/header&gt;
+
+&lt;main role="main"&gt;
+  &lt;section id="projects" aria-labelledby="projects-heading"&gt;
+    &lt;h2 id="projects-heading"&gt;Our Projects&lt;/h2&gt;
+    &lt;div class="projects-grid"&gt;
+      &lt;article class="project-item"&gt;
+        &lt;h3&gt;Summer House&lt;/h3&gt;
+        &lt;img src="/w3images/house5.jpg" alt="Modern summer house with large windows and natural lighting"&gt;
+      &lt;/article&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+  
+  &lt;section id="about" aria-labelledby="about-heading"&gt;
+    &lt;h2 id="about-heading"&gt;About Our Team&lt;/h2&gt;
+    &lt;div class="team-grid"&gt;
+      &lt;article class="team-member"&gt;
+        &lt;h3&gt;John Doe&lt;/h3&gt;
+        &lt;p class="role"&gt;CEO &amp; Founder&lt;/p&gt;
+        &lt;img src="/w3images/team2.jpg" alt="John Doe, CEO and Founder of BR Architects"&gt;
+      &lt;/article&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+&lt;/main&gt;
+
+&lt;footer role="contentinfo"&gt;
+  &lt;section id="contact" aria-labelledby="contact-heading"&gt;
+    &lt;h2 id="contact-heading"&gt;Contact Information&lt;/h2&gt;
+    &lt;address&gt;
+      &lt;p&gt;BR Architects&lt;/p&gt;
+      &lt;p&gt;123 Architecture Lane&lt;/p&gt;
+      &lt;p&gt;Design City, DC 12345&lt;/p&gt;
+    &lt;/address&gt;
+  &lt;/section&gt;
+&lt;/footer&gt;</code></pre>
+            </div>
+        </section>
+
+        <!-- Semantic Elements Analysis -->
+        <section aria-labelledby="semantic-elements-heading">
+            <h2 id="semantic-elements-heading">HTML5 Semantic Elements Implementation</h2>
+            
+            <div class="table-wrapper">
+                <table class="content-table" role="table" aria-label="HTML5 semantic elements analysis">
+                    <thead>
+                        <tr role="row">
+                            <th scope="col">Element</th>
+                            <th scope="col">Purpose</th>
+                            <th scope="col">Current Usage</th>
+                            <th scope="col">Recommendation</th>
+                            <th scope="col">Accessibility Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr role="row">
+                            <td><code>&lt;header&gt;</code></td>
+                            <td>Page or section header content</td>
+                            <td>❌ Not implemented</td>
+                            <td>Use for main navigation and hero section</td>
+                            <td>Provides landmark navigation for screen readers</td>
+                        </tr>
+                        <tr role="row">
+                            <td><code>&lt;nav&gt;</code></td>
+                            <td>Navigation links container</td>
+                            <td>❌ Uses generic div</td>
+                            <td>Wrap navigation menu in nav element</td>
+                            <td>Identifies navigation regions for assistive technology</td>
+                        </tr>
+                        <tr role="row">
+                            <td><code>&lt;main&gt;</code></td>
+                            <td>Primary content of document</td>
+                            <td>❌ Not implemented</td>
+                            <td>Wrap main content sections</td>
+                            <td>Defines main content area for skip navigation</td>
+                        </tr>
+                        <tr role="row">
+                            <td><code>&lt;section&gt;</code></td>
+                            <td>Thematic grouping of content</td>
+                            <td>⚠️ Partial use</td>
+                            <td>Use for projects, about, contact sections</td>
+                            <td>Creates logical document outline</td>
+                        </tr>
+                        <tr role="row">
+                            <td><code>&lt;article&gt;</code></td>
+                            <td>Independent, reusable content</td>
+                            <td>❌ Not implemented</td>
+                            <td>Use for individual projects and team members</td>
+                            <td>Helps screen readers identify discrete content</td>
+                        </tr>
+                        <tr role="row">
+                            <td><code>&lt;aside&gt;</code></td>
+                            <td>Complementary content</td>
+                            <td>❌ Not applicable</td>
+                            <td>Could be used for sidebars or related info</td>
+                            <td>Indicates supplementary content</td>
+                        </tr>
+                        <tr role="row">
+                            <td><code>&lt;footer&gt;</code></td>
+                            <td>Footer content</td>
+                            <td>❌ Not implemented</td>
+                            <td>Use for contact info and site footer</td>
+                            <td>Provides document structure clarity</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Accessibility Features Analysis -->
+        <section aria-labelledby="accessibility-heading">
+            <h2 id="accessibility-heading">Accessibility Features Assessment</h2>
+            
+            <h3>WCAG 2.1 Compliance Evaluation</h3>
+            <div class="compliance-grid">
+                <article class="compliance-item excellent">
+                    <h4>✅ Level A Compliance - Excellent</h4>
+                    <ul>
+                        <li><strong>Images:</strong> All images have appropriate alt text</li>
+                        <li><strong>Color Contrast:</strong> Meets minimum 4.5:1 ratio requirements</li>
+                        <li><strong>Heading Structure:</strong> Logical h1-h6 hierarchy maintained</li>
+                        <li><strong>Link Context:</strong> Links have descriptive text</li>
+                    </ul>
+                </article>
+                
+                <article class="compliance-item good">
+                    <h4>✅ Level AA Compliance - Good</h4>
+                    <ul>
+                        <li><strong>Keyboard Navigation:</strong> All interactive elements are focusable</li>
+                        <li><strong>Font Sizing:</strong> Text can be zoomed to 200% without loss of functionality</li>
+                        <li><strong>Focus Indicators:</strong> Visible focus states on interactive elements</li>
+                    </ul>
+                </article>
+                
+                <article class="compliance-item needs-improvement">
+                    <h4>🔧 Level AAA Opportunities</h4>
+                    <ul>
+                        <li><strong>ARIA Labels:</strong> Missing aria-label and aria-labelledby attributes</li>
+                        <li><strong>Skip Links:</strong> No skip navigation implemented</li>
+                        <li><strong>Form Labels:</strong> Contact form uses placeholders instead of labels</li>
+                        <li><strong>Landmark Roles:</strong> Missing role attributes for better navigation</li>
+                        <li><strong>Screen Reader Support:</strong> Limited semantic structure for assistive technology</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <!-- ARIA Implementation Guide -->
+        <section aria-labelledby="aria-heading">
+            <h2 id="aria-heading">ARIA (Accessible Rich Internet Applications) Enhancement</h2>
+            <p>ARIA attributes provide additional semantic information to assistive technologies, especially for dynamic content and complex UI components.</p>
+            
+            <h3>Recommended ARIA Implementation</h3>
+            <div class="code-comparison-grid">
+                <div class="code-block">
+                    <h4>Current Navigation Structure</h4>
+                    <pre><code>&lt;div class="w3-bar w3-white w3-wide w3-padding w3-card"&gt;
+  &lt;a href="#home" class="w3-bar-item w3-button"&gt;
+    &lt;b&gt;BR&lt;/b&gt; Architects
+  &lt;/a&gt;
+  &lt;div class="w3-right w3-hide-small"&gt;
+    &lt;a href="#projects" class="w3-bar-item w3-button"&gt;Projects&lt;/a&gt;
+    &lt;a href="#about" class="w3-bar-item w3-button"&gt;About&lt;/a&gt;
+    &lt;a href="#contact" class="w3-bar-item w3-button"&gt;Contact&lt;/a&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                </div>
+
+                <div class="code-block">
+                    <h4>Enhanced ARIA Navigation</h4>
+                    <pre><code>&lt;nav role="navigation" aria-label="Main navigation"&gt;
+  &lt;div class="nav-container"&gt;
+    &lt;div class="logo"&gt;
+      &lt;a href="#home" aria-label="BR Architects home page"&gt;
+        &lt;h1&gt;&lt;abbr title="BR Architects"&gt;BR&lt;/abbr&gt; Architects&lt;/h1&gt;
+      &lt;/a&gt;
+    &lt;/div&gt;
+    &lt;ul role="menubar" aria-label="Main menu"&gt;
+      &lt;li role="none"&gt;
+        &lt;a href="#projects" role="menuitem" aria-describedby="projects-desc"&gt;
+          Projects
+        &lt;/a&gt;
+      &lt;/li&gt;
+      &lt;li role="none"&gt;
+        &lt;a href="#about" role="menuitem" aria-describedby="about-desc"&gt;
+          About
+        &lt;/a&gt;
+      &lt;/li&gt;
+      &lt;li role="none"&gt;
+        &lt;a href="#contact" role="menuitem" aria-describedby="contact-desc"&gt;
+          Contact
+        &lt;/a&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/nav&gt;
+
+&lt;!-- Hidden descriptions for screen readers --&gt;
+&lt;div id="projects-desc" class="sr-only"&gt;View our architectural project portfolio&lt;/div&gt;
+&lt;div id="about-desc" class="sr-only"&gt;Learn about our team and company&lt;/div&gt;
+&lt;div id="contact-desc" class="sr-only"&gt;Get in touch with our team&lt;/div&gt;</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form Accessibility -->
+        <section aria-labelledby="form-accessibility-heading">
+            <h2 id="form-accessibility-heading">Form Accessibility Enhancement</h2>
+            <p>Proper form labeling and structure are crucial for accessibility and usability across all devices and assistive technologies.</p>
+            
+            <h3>Current vs. Recommended Form Structure</h3>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>Current Contact Form</h4>
+                    <div class="code-block">
+                        <pre><code>&lt;form action="/action_page.php" target="_blank"&gt;
+  &lt;p&gt;&lt;input class="w3-input w3-border" type="text" placeholder="Name" required name="Name"&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;input class="w3-input w3-border" type="text" placeholder="Email" required name="Email"&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;input class="w3-input w3-border" type="text" placeholder="Subject" required name="Subject"&gt;&lt;/p&gt;
+  &lt;p&gt;&lt;input class="w3-input w3-border" type="text" placeholder="Comment" required name="Comment"&gt;&lt;/p&gt;
+  &lt;p&gt;
+    &lt;button class="w3-button w3-black w3-section" type="submit"&gt;
+      &lt;i class="fa fa-paper-plane"&gt;&lt;/i&gt; SEND MESSAGE
+    &lt;/button&gt;
+  &lt;/p&gt;
+&lt;/form&gt;</code></pre>
+                    </div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h4>Accessible Contact Form</h4>
+                    <div class="code-block">
+                        <pre><code>&lt;form action="/action_page.php" method="post" aria-labelledby="contact-form-heading"&gt;
+  &lt;fieldset&gt;
+    &lt;legend id="contact-form-heading"&gt;Send us a message&lt;/legend&gt;
+    
+    &lt;div class="form-group"&gt;
+      &lt;label for="contact-name"&gt;Full Name *&lt;/label&gt;
+      &lt;input type="text" id="contact-name" name="name" 
+             aria-describedby="name-help" required
+             aria-required="true"&gt;
+      &lt;div id="name-help" class="form-help"&gt;Enter your full name&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="form-group"&gt;
+      &lt;label for="contact-email"&gt;Email Address *&lt;/label&gt;
+      &lt;input type="email" id="contact-email" name="email"
+             aria-describedby="email-help" required
+             aria-required="true"&gt;
+      &lt;div id="email-help" class="form-help"&gt;We'll use this to respond to your message&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="form-group"&gt;
+      &lt;label for="contact-subject"&gt;Subject *&lt;/label&gt;
+      &lt;input type="text" id="contact-subject" name="subject"
+             aria-describedby="subject-help" required
+             aria-required="true"&gt;
+      &lt;div id="subject-help" class="form-help"&gt;Brief description of your inquiry&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="form-group"&gt;
+      &lt;label for="contact-message"&gt;Message *&lt;/label&gt;
+      &lt;textarea id="contact-message" name="message" rows="5"
+                aria-describedby="message-help" required
+                aria-required="true"&gt;&lt;/textarea&gt;
+      &lt;div id="message-help" class="form-help"&gt;Detailed message (minimum 10 characters)&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;button type="submit" class="submit-button" aria-describedby="submit-help"&gt;
+      &lt;span aria-hidden="true"&gt;📧&lt;/span&gt; Send Message
+    &lt;/button&gt;
+    &lt;div id="submit-help" class="form-help"&gt;Form will be submitted securely&lt;/div&gt;
+  &lt;/fieldset&gt;
+&lt;/form&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Document Outline Analysis -->
+        <section aria-labelledby="outline-heading">
+            <h2 id="outline-heading">Document Outline & Heading Structure</h2>
+            <p>A proper heading hierarchy creates a logical document outline that screen readers use for navigation.</p>
+            
+            <h3>Current Template Heading Analysis</h3>
+            <div class="table-wrapper">
+                <table class="content-table" role="table" aria-label="Heading structure analysis">
+                    <thead>
+                        <tr role="row">
+                            <th scope="col">Section</th>
+                            <th scope="col">Current Heading</th>
+                            <th scope="col">Level</th>
+                            <th scope="col">Issue</th>
+                            <th scope="col">Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr role="row">
+                            <td>Hero Section</td>
+                            <td>BR Architects</td>
+                            <td>H1</td>
+                            <td>✅ Correct</td>
+                            <td>Maintain as primary heading</td>
+                        </tr>
+                        <tr role="row">
+                            <td>Projects</td>
+                            <td>Projects</td>
+                            <td>H3</td>
+                            <td>⚠️ Skips H2 level</td>
+                            <td>Change to H2 for proper hierarchy</td>
+                        </tr>
+                        <tr role="row">
+                            <td>About</td>
+                            <td>About</td>
+                            <td>H3</td>
+                            <td>⚠️ Skips H2 level</td>
+                            <td>Change to H2 for proper hierarchy</td>
+                        </tr>
+                        <tr role="row">
+                            <td>Team Members</td>
+                            <td>John Doe, Jane Doe, etc.</td>
+                            <td>H3</td>
+                            <td>✅ Correct under About H2</td>
+                            <td>Maintain current structure</td>
+                        </tr>
+                        <tr role="row">
+                            <td>Contact</td>
+                            <td>Contact</td>
+                            <td>H3</td>
+                            <td>⚠️ Skips H2 level</td>
+                            <td>Change to H2 for proper hierarchy</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Recommended Document Outline</h3>
+            <div class="code-block">
+                <pre><code>1. BR Architects (H1) - Main page title
+   2. Our Projects (H2) - Major section
+      3. Summer House (H3) - Individual project
+      3. Family Home (H3) - Individual project
+      3. Modern Office (H3) - Individual project
+   2. About Our Team (H2) - Major section
+      3. John Doe (H3) - Team member
+      3. Jane Doe (H3) - Team member
+      3. Mike Ross (H3) - Team member
+   2. Contact Information (H2) - Major section
+      3. Office Location (H3) - Contact subsection
+      3. Get In Touch (H3) - Contact form section</code></pre>
+            </div>
+        </section>
+
+        <!-- SEO Benefits of Semantic HTML -->
+        <section aria-labelledby="seo-benefits-heading">
+            <h2 id="seo-benefits-heading">SEO Benefits of Semantic HTML</h2>
+            <p>Semantic HTML provides significant search engine optimization advantages by helping search engines understand content structure and meaning.</p>
+            
+            <div class="benefits-grid">
+                <article class="benefit-item">
+                    <h4>🔍 Content Understanding</h4>
+                    <p>Search engines can better understand content hierarchy and context, leading to improved relevance scoring and search rankings.</p>
+                </article>
+                <article class="benefit-item">
+                    <h4>📊 Rich Snippets</h4>
+                    <p>Proper structured data and semantic markup enable enhanced search result displays with rich snippets and featured content.</p>
+                </article>
+                <article class="benefit-item">
+                    <h4>🎯 Topic Authority</h4>
+                    <p>Clear content organization helps establish topic authority and expertise in specific subject areas for better topical relevance.</p>
+                </article>
+                <article class="benefit-item">
+                    <h4>📱 Mobile-First Indexing</h4>
+                    <p>Google's mobile-first indexing favors semantic, accessible markup that works well across all devices and screen readers.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Performance Impact -->
+        <section aria-labelledby="performance-impact-heading">
+            <h2 id="performance-impact-heading">Performance Impact of Semantic HTML</h2>
+            <p>Semantic HTML contributes to better performance through improved code efficiency and reduced CSS complexity.</p>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>📈 Performance Benefits</h4>
+                    <ul>
+                        <li>Reduced CSS specificity conflicts</li>
+                        <li>Smaller CSS file sizes through semantic targeting</li>
+                        <li>Better browser rendering optimization</li>
+                        <li>Improved caching efficiency</li>
+                        <li>Faster parsing by assistive technologies</li>
+                        <li>Enhanced Core Web Vitals scores</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h4>⚡ Implementation Impact</h4>
+                    <ul>
+                        <li>Cleaner, more maintainable code structure</li>
+                        <li>Reduced development time for future features</li>
+                        <li>Better team collaboration and code review</li>
+                        <li>Easier automated testing implementation</li>
+                        <li>Improved developer experience and debugging</li>
+                        <li>Future-proof code architecture</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Implementation Roadmap -->
+        <section aria-labelledby="roadmap-heading">
+            <h2 id="roadmap-heading">Semantic HTML Implementation Roadmap</h2>
+            <p>A step-by-step approach to implementing semantic HTML improvements in the existing template.</p>
+            
+            <div class="terms-grid">
+                <article class="term-card">
+                    <h3>Phase 1: Foundation</h3>
+                    <ul>
+                        <li>Add HTML5 semantic elements (header, nav, main, footer)</li>
+                        <li>Implement proper heading hierarchy</li>
+                        <li>Add skip navigation links</li>
+                        <li>Include basic ARIA landmark roles</li>
+                    </ul>
+                </article>
+                <article class="term-card">
+                    <h3>Phase 2: Enhancement</h3>
+                    <ul>
+                        <li>Add ARIA labels and descriptions</li>
+                        <li>Improve form accessibility with proper labels</li>
+                        <li>Implement keyboard navigation support</li>
+                        <li>Add focus management for dynamic content</li>
+                    </ul>
+                </article>
+                <article class="term-card">
+                    <h3>Phase 3: Optimization</h3>
+                    <ul>
+                        <li>Add structured data markup (JSON-LD)</li>
+                        <li>Implement comprehensive ARIA patterns</li>
+                        <li>Add live regions for dynamic updates</li>
+                        <li>Optimize for voice navigation and screen readers</li>
+                    </ul>
+                </article>
+                <article class="term-card">
+                    <h3>Phase 4: Validation</h3>
+                    <ul>
+                        <li>Conduct accessibility audits with real users</li>
+                        <li>Test with multiple screen readers</li>
+                        <li>Validate HTML and accessibility compliance</li>
+                        <li>Monitor performance impact and optimize</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section aria-labelledby="conclusion-heading">
+            <h2 id="conclusion-heading">Semantic HTML Analysis Conclusion</h2>
+            
+            <h3>Overall Assessment</h3>
+            <p>The W3Schools Architect template demonstrates basic HTML competency but lacks the semantic structure and accessibility features expected in modern web development. While the template functions well visually, implementing semantic HTML5 elements and ARIA attributes would significantly improve its accessibility, SEO performance, and maintainability.</p>
+            
+            <div class="final-rating">
+                <h4>Semantic HTML Implementation Scorecard</h4>
+                <div class="rating-breakdown">
+                    <div class="rating-item">
+                        <span>HTML5 Semantic Elements</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 30%"></div>
+                        </div>
+                        <span>3.0/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>ARIA Implementation</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 20%"></div>
+                        </div>
+                        <span>2.0/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>Heading Hierarchy</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 60%"></div>
+                        </div>
+                        <span>6.0/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>Form Accessibility</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 40%"></div>
+                        </div>
+                        <span>4.0/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>SEO Optimization</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 50%"></div>
+                        </div>
+                        <span>5.0/10</span>
+                    </div>
+                    <div class="rating-item">
+                        <span>Overall Semantic Structure</span>
+                        <div class="rating-bar">
+                            <div class="rating-fill" style="width: 40%"></div>
+                        </div>
+                        <span>4.0/10</span>
+                    </div>
+                </div>
+                
+                <div class="overall-score">
+                    <h5>Overall Semantic HTML Score</h5>
+                    <div class="final-score">4.0/10</div>
+                    <p>Significant improvement potential through semantic HTML5 implementation</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-content">
+            <p>&copy; 2025 Template Analysis Project by Brennan Klein</p>
+            <p>This is a class project for <a href="https://ksuweb.github.io/IT3203/" target="_blank" rel="noopener">IT3203 - Web Development</a> at Kennesaw State University</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for mobile menu functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            if (menuToggle && navMenu) {
+                menuToggle.addEventListener('click', function() {
+                    const isExpanded = navMenu.classList.contains('active');
+                    
+                    navMenu.classList.toggle('active');
+                    menuToggle.classList.toggle('active');
+                    menuToggle.setAttribute('aria-expanded', !isExpanded);
+                    
+                    if (!isExpanded) {
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        document.body.style.overflow = '';
+                    }
+                });
+                
+                // Close menu when clicking on nav links
+                const navLinks = document.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navMenu.classList.remove('active');
+                        menuToggle.classList.remove('active');
+                        menuToggle.setAttribute('aria-expanded', false);
+                        document.body.style.overflow = '';
+                    });
+                });
+            }
+            
+            // Skip link functionality
+            const skipLink = document.querySelector('.skip-link');
+            if (skipLink) {
+                skipLink.addEventListener('focus', function() {
+                    this.style.left = '10px';
+                    this.style.top = '10px';
+                });
+                
+                skipLink.addEventListener('blur', function() {
+                    this.style.left = '-9999px';
+                    this.style.top = '-9999px';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
