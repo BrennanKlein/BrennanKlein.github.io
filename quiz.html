@@ -885,6 +885,882 @@
                 e.target.dispatchEvent(new Event('change'));
             }
         });
+
+        // Auto-save functionality
+        function saveProgress() {
+            if (quizContainer.style.display === 'none') return;
+            
+            const formData = new FormData(quizForm);
+            const progress = {};
+            
+            // Save radio button selections
+            for (let [key, value] of formData.entries()) {
+                if (progress[key]) {
+                    if (Array.isArray(progress[key])) {
+                        progress[key].push(value);
+                    } else {
+                        progress[key] = [progress[key], value];
+                    }
+                } else {
+                    progress[key] = value;
+                }
+            }
+            
+            // Save text inputs separately
+            const textInputs = document.querySelectorAll('input[type="text"]');
+            textInputs.forEach(input => {
+                if (input.value.trim()) {
+                    progress[input.name] = input.value.trim();
+                }
+            });
+            
+            try {
+                localStorage.setItem('quizProgress', JSON.stringify(progress));
+                localStorage.setItem('quizStartTime', Date.now());
+            } catch (e) {
+                console.log('Could not save progress to localStorage');
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem('quizProgress');
+                if (saved) {
+                    const progress = JSON.parse(saved);
+                    
+                    // Restore selections
+                    for (let [key, value] of Object.entries(progress)) {
+                        if (Array.isArray(value)) {
+                            // Handle checkbox groups
+                            value.forEach(val => {
+                                const input = document.querySelector(`input[name="${key}"][value="${val}"]`);
+                                if (input) input.checked = true;
+                            });
+                        } else {
+                            // Handle radio buttons
+                            const radioInput = document.querySelector(`input[name="${key}"][value="${value}"]`);
+                            if (radioInput) {
+                                radioInput.checked = true;
+                            }
+                            
+                            // Handle text inputs
+                            const textInput = document.querySelector(`input[name="${key}"][type="text"]`);
+                            if (textInput) {
+                                textInput.value = value;
+                            }
+                        }
+                    }
+                    
+                    updateProgress();
+                    
+                    // Show restore notification
+                    showNotification('Previous progress restored!', 'success');
+                }
+            } catch (e) {
+                console.log('Could not load saved progress');
+            }
+        }
+
+        function clearProgress() {
+            try {
+                localStorage.removeItem('quizProgress');
+                localStorage.removeItem('quizStartTime');
+            } catch (e) {
+                console.log('Could not clear progress');
+            }
+        }
+
+        // Enhanced start quiz function
+        function enhancedStartQuiz() {
+            startQuiz();
+            
+            // Check for saved progress
+            const saved = localStorage.getItem('quizProgress');
+            if (saved) {
+                setTimeout(() => {
+                    if (confirm('You have previous quiz progress saved. Would you like to restore it?')) {
+                        loadProgress();
+                    } else {
+                        clearProgress();
+                    }
+                }, 500);
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info', duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.remove()" aria-label="Close notification">&times;</button>
+            `;
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            // Auto remove
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, duration);
+        }
+
+        // Enhanced progress tracking with validation
+        function updateProgress() {
+            const answeredQuestions = getAnsweredQuestions();
+            const progressPercentage = (answeredQuestions / totalQuestions) * 100;
+            
+            progressFill.style.width = progressPercentage + '%';
+            progressText.textContent = `${answeredQuestions} of ${totalQuestions} questions answered`;
+            
+            // Update submit button state
+            const submitBtn = document.querySelector('.submit-btn');
+            if (submitBtn) {
+                if (answeredQuestions === totalQuestions) {
+                    submitBtn.textContent = 'Submit Assessment';
+                    submitBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                } else {
+                    submitBtn.textContent = `Submit (${answeredQuestions}/${totalQuestions} answered)`;
+                    submitBtn.style.background = 'linear-gradient(135deg, #6c757d, #5a6268)';
+                }
+            }
+        }
+
+        // Enhanced validation before submission
+        function validateQuiz() {
+            const errors = [];
+            const answeredQuestions = getAnsweredQuestions();
+            
+            if (answeredQuestions < totalQuestions) {
+                const unanswered = totalQuestions - answeredQuestions;
+                errors.push(`Please answer all questions. ${unanswered} question(s) remaining.`);
+            }
+            
+            // Check for empty text inputs
+            const textInputs = document.querySelectorAll('input[type="text"]');
+            textInputs.forEach((input, index) => {
+                if (!input.value.trim()) {
+                    errors.push(`Question ${input.closest('.question-card').dataset.question}: Please fill in the blank.`);
+                }
+            });
+            
+            // Check for checkbox questions with no selections
+            const checkboxGroups = ['q5', 'q8'];
+            checkboxGroups.forEach(group => {
+                const checked = document.querySelectorAll(`input[name="${group}"]:checked`);
+                if (checked.length === 0) {
+                    const questionNum = group.replace('q', '');
+                    errors.push(`Question ${questionNum}: Please select at least one option.`);
+                }
+            });
+            
+            return errors;
+        }
+
+        // Enhanced submit function with validation
+        function submitQuiz(e) {
+            e.preventDefault();
+            
+            // Validate before submission
+            const errors = validateQuiz();
+            if (errors.length > 0) {
+                const errorMessage = 'Please complete the following:\n\n' + errors.join('\n');
+                alert(errorMessage);
+                
+                // Scroll to first unanswered question
+                const firstUnanswered = document.querySelector('.question-card:not(.answered)');
+                if (firstUnanswered) {
+                    firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+            
+            // Show confirmation
+            if (!confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.')) {
+                return;
+            }
+            
+            // Disable form during submission
+            const submitBtn = document.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            
+            // Calculate score
+            let totalScore = 0;
+            let results = [];
+            let timeSpent = 0;
+            
+            // Calculate time spent
+            const startTime = localStorage.getItem('quizStartTime');
+            if (startTime) {
+                timeSpent = Math.round((Date.now() - parseInt(startTime)) / 1000 / 60); // minutes
+            }
+
+            // Question 1
+            const q1Answer = document.querySelector('input[name="q1"]:checked');
+            const q1Result = checkSingleChoice('q1', q1Answer ? q1Answer.value : null);
+            results.push(q1Result);
+            totalScore += q1Result.earned;
+
+            // Question 2
+            const q2Answer = document.querySelector('input[name="q2"]:checked');
+            const q2Result = checkSingleChoice('q2', q2Answer ? q2Answer.value : null);
+            results.push(q2Result);
+            totalScore += q2Result.earned;
+
+            // Question 3
+            const q3Answer = document.querySelector('input[name="q3"]:checked');
+            const q3Result = checkSingleChoice('q3', q3Answer ? q3Answer.value : null);
+            results.push(q3Result);
+            totalScore += q3Result.earned;
+
+            // Question 4 (Fill in blank)
+            const q4Answer = document.getElementById('q4').value.trim().toLowerCase();
+            const q4Result = checkFillBlank('q4', q4Answer);
+            results.push(q4Result);
+            totalScore += q4Result.earned;
+
+            // Question 5 (Multiple correct)
+            const q5Answers = Array.from(document.querySelectorAll('input[name="q5"]:checked')).map(input => input.value);
+            const q5Result = checkMultipleChoice('q5', q5Answers);
+            results.push(q5Result);
+            totalScore += q5Result.earned;
+
+            // Question 6
+            const q6Answer = document.querySelector('input[name="q6"]:checked');
+            const q6Result = checkSingleChoice('q6', q6Answer ? q6Answer.value : null);
+            results.push(q6Result);
+            totalScore += q6Result.earned;
+
+            // Question 7
+            const q7Answer = document.querySelector('input[name="q7"]:checked');
+            const q7Result = checkSingleChoice('q7', q7Answer ? q7Answer.value : null);
+            results.push(q7Result);
+            totalScore += q7Result.earned;
+
+            // Question 8 (Multiple correct)
+            const q8Answers = Array.from(document.querySelectorAll('input[name="q8"]:checked')).map(input => input.value);
+            const q8Result = checkMultipleChoice('q8', q8Answers);
+            results.push(q8Result);
+            totalScore += q8Result.earned;
+
+            // Question 9 (Fill in blank)
+            const q9Answer = document.getElementById('q9').value.trim().toLowerCase();
+            const q9Result = checkFillBlank('q9', q9Answer);
+            results.push(q9Result);
+            totalScore += q9Result.earned;
+
+            // Question 10
+            const q10Answer = document.querySelector('input[name="q10"]:checked');
+            const q10Result = checkSingleChoice('q10', q10Answer ? q10Answer.value : null);
+            results.push(q10Result);
+            totalScore += q10Result.earned;
+
+            // Save results to localStorage for potential review
+            const quizResults = {
+                score: totalScore,
+                percentage: Math.round((totalScore / 20) * 100),
+                timeSpent: timeSpent,
+                results: results,
+                completedAt: new Date().toISOString()
+            };
+            
+            try {
+                localStorage.setItem('lastQuizResults', JSON.stringify(quizResults));
+            } catch (e) {
+                console.log('Could not save results');
+            }
+
+            // Clear progress since quiz is complete
+            clearProgress();
+
+            // Display Results
+            setTimeout(() => {
+                displayResults(totalScore, results, timeSpent);
+                
+                // Re-enable button (in case user wants to retake)
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }, 1000);
+        }
+
+        // Enhanced display results with more feedback
+        function displayResults(totalScore, results, timeSpent = 0) {
+            const totalPoints = 20;
+            const percentage = Math.round((totalScore / totalPoints) * 100);
+            const passed = percentage >= 70;
+
+            // Update score display
+            document.getElementById('finalScore').textContent = totalScore;
+            document.getElementById('totalPoints').textContent = totalPoints;
+            document.getElementById('percentage').textContent = percentage + '%';
+            
+            const passFailElement = document.getElementById('passFailResult');
+            passFailElement.textContent = passed ? '✅ PASSED' : '❌ FAILED';
+            passFailElement.className = passed ? 'pass' : 'fail';
+
+            // Enhanced score interpretation with specific feedback
+            const scoreMessage = document.getElementById('scoreMessage');
+            let message = '';
+            let className = '';
+            
+            if (percentage >= 95) {
+                message = '🌟 Outstanding! You have mastered the material completely.';
+                className = 'excellent';
+            } else if (percentage >= 90) {
+                message = '🎉 Excellent! You have a strong understanding of the material.';
+                className = 'excellent';
+            } else if (percentage >= 85) {
+                message = '👍 Very good! You understand most concepts well with minor gaps.';
+                className = 'good';
+            } else if (percentage >= 80) {
+                message = '✅ Good work! You have a solid grasp of the fundamentals.';
+                className = 'good';
+            } else if (percentage >= 70) {
+                message = '📚 You passed! Consider reviewing the areas you missed.';
+                className = 'pass';
+            } else if (percentage >= 60) {
+                message = '📖 Close! Review the material and try again to improve your understanding.';
+                className = 'fail';
+            } else {
+                message = '📝 Please review the material thoroughly before retaking the quiz.';
+                className = 'fail';
+            }
+            
+            if (timeSpent > 0) {
+                message += ` (Completed in ${timeSpent} minute${timeSpent !== 1 ? 's' : ''})`;
+            }
+            
+            scoreMessage.textContent = message;
+            scoreMessage.className = className;
+
+            // Create detailed results with enhanced feedback
+            const detailedResults = document.getElementById('detailedResults');
+            detailedResults.innerHTML = '';
+
+            // Add summary statistics
+            const correctCount = results.filter(r => r.isCorrect).length;
+            const summaryCard = document.createElement('div');
+            summaryCard.className = 'summary-card';
+            summaryCard.innerHTML = `
+                <h3>Performance Summary</h3>
+                <div class="summary-stats">
+                    <div class="summary-stat">
+                        <span class="stat-number">${correctCount}</span>
+                        <span class="stat-label">Correct</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-number">${totalQuestions - correctCount}</span>
+                        <span class="stat-label">Incorrect</span>
+                    </div>
+                    <div class="summary-stat">
+                        <span class="stat-number">${percentage}%</span>
+                        <span class="stat-label">Score</span>
+                    </div>
+                    ${timeSpent > 0 ? `
+                    <div class="summary-stat">
+                        <span class="stat-number">${timeSpent}</span>
+                        <span class="stat-label">Minutes</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            detailedResults.appendChild(summaryCard);
+
+            const questionTitles = [
+                'W3.CSS Framework Advantages',
+                'Grid System Implementation',
+                'Mobile-First Design Approach',
+                'CSS Class Completion',
+                'Semantic HTML Benefits',
+                'Framework Performance Metrics',
+                'ARIA Accessibility Standards',
+                'Responsive Design Breakpoints',
+                'HTML5 Semantic Elements',
+                'Template Overall Assessment'
+            ];
+
+            // Add individual question results
+            results.forEach((result, index) => {
+                const resultCard = document.createElement('article');
+                resultCard.className = `result-card ${result.isCorrect ? 'correct' : 'incorrect'}`;
+                resultCard.setAttribute('role', 'region');
+                resultCard.setAttribute('aria-label', `Question ${index + 1} result`);
+                
+                // Enhanced feedback based on question type
+                let feedback = '';
+                if (!result.isCorrect) {
+                    if (index === 3 || index === 8) { // Fill-in-blank questions
+                        feedback = '<div class="feedback">💡 <strong>Tip:</strong> This requires an exact match. Check the lesson material for the specific term.</div>';
+                    } else if (index === 4 || index === 7) { // Multiple choice questions
+                        feedback = '<div class="feedback">💡 <strong>Tip:</strong> Multiple answers were required. Make sure to select all correct options.</div>';
+                    } else {
+                        feedback = '<div class="feedback">💡 <strong>Tip:</strong> Review the relevant section to understand this concept better.</div>';
+                    }
+                }
+                
+                resultCard.innerHTML = `
+                    <div class="result-header">
+                        <h4>Question ${index + 1}: ${questionTitles[index]}</h4>
+                        <div class="result-score">
+                            <span class="points">${result.earned}/${result.total} points</span>
+                            <span class="result-status" aria-label="${result.isCorrect ? 'Correct' : 'Incorrect'}">${result.isCorrect ? '✅' : '❌'}</span>
+                        </div>
+                    </div>
+                    <div class="result-details">
+                        <div class="answer-comparison">
+                            <div class="user-answer">
+                                <strong>Your answer:</strong> ${result.userAnswer}
+                            </div>
+                            <div class="correct-answer">
+                                <strong>Correct answer:</strong> ${result.correctAnswer}
+                            </div>
+                        </div>
+                        ${feedback}
+                        <div class="explanation">
+                            <strong>Explanation:</strong> ${result.explanation}
+                        </div>
+                    </div>
+                `;
+                
+                detailedResults.appendChild(resultCard);
+            });
+
+            // Show results, hide quiz
+            quizContainer.style.display = 'none';
+            quizResults.style.display = 'block';
+            
+            // Scroll to results with smooth animation
+            setTimeout(() => {
+                quizResults.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+
+            // Announce results to screen readers
+            const announcement = `Quiz completed. You scored ${totalScore} out of ${totalPoints} points, ${percentage}%. ${passed ? 'You passed the assessment.' : 'You did not pass the assessment.'}`;
+            announceToScreenReader(announcement);
+            
+            // Show completion notification
+            showNotification(passed ? 'Congratulations! You passed the quiz!' : 'Quiz completed. Review the feedback and try again!', passed ? 'success' : 'warning', 5000);
+        }
+
+        // Update start button to use enhanced version
+        if (startQuizBtn) {
+            startQuizBtn.removeEventListener('click', startQuiz);
+            startQuizBtn.addEventListener('click', enhancedStartQuiz);
+        }
+
+        // Auto-save progress periodically
+        setInterval(() => {
+            if (quizContainer.style.display !== 'none') {
+                saveProgress();
+            }
+        }, 30000); // Save every 30 seconds
+
+        // Save progress on form changes
+        document.addEventListener('change', function(e) {
+            if (e.target.closest('#quizForm')) {
+                setTimeout(saveProgress, 100); // Small delay to ensure value is updated
+            }
+        });
+
+        // Mark questions as answered for visual feedback
+        function updateQuestionStatus() {
+            document.querySelectorAll('.question-card').forEach((card, index) => {
+                const questionNum = index + 1;
+                let isAnswered = false;
+                
+                if (questionNum === 4 || questionNum === 9) {
+                    // Text input questions
+                    const input = card.querySelector('input[type="text"]');
+                    isAnswered = input && input.value.trim().length > 0;
+                } else if (questionNum === 5 || questionNum === 8) {
+                    // Checkbox questions
+                    const checked = card.querySelectorAll('input[type="checkbox"]:checked');
+                    isAnswered = checked.length > 0;
+                } else {
+                    // Radio button questions
+                    const checked = card.querySelector('input[type="radio"]:checked');
+                    isAnswered = !!checked;
+                }
+                
+                card.classList.toggle('answered', isAnswered);
+                card.classList.toggle('unanswered', !isAnswered);
+            });
+        }
+
+        // Update question status on changes
+        document.addEventListener('change', updateQuestionStatus);
+        document.addEventListener('input', updateQuestionStatus);
     </script>
+
+    <!-- Additional CSS for Enhanced Quiz Features -->
+    <style>
+        /* Enhanced question state indicators */
+        .question-card.answered {
+            border-left-color: #28a745;
+        }
+        
+        .question-card.unanswered {
+            border-left-color: #ffc107;
+        }
+        
+        .question-card.answered::before {
+            content: "✓";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #28a745;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Notification system */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        .notification-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+
+        .notification-info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: inherit;
+        }
+
+        .notification-message {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        /* Enhanced submit button states */
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Summary statistics card */
+        .summary-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Enhanced feedback styling */
+        .feedback {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 0.95rem;
+            color: #856404;
+        }
+
+        .feedback strong {
+            color: #856404;
+        }
+
+        /* Visual improvements for options */
+        .option:has(input:checked) {
+            border-color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        .checkbox-option:has(input:checked) {
+            border-color: #20c997;
+            background-color: rgba(32, 201, 151, 0.1);
+        }
+
+        /* Enhanced progress bar animation */
+        .progress-fill {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 20px 20px;
+            animation: progressMove 1s linear infinite;
+        }
+
+        @keyframes progressMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+
+        /* Improved form validation feedback */
+        .fill-blank:invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+
+        .fill-blank:valid {
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        /* Enhanced mobile responsiveness for notifications */
+        @media (max-width: 767px) {
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+                transform: translateY(-100px);
+            }
+
+            .notification.show {
+                transform: translateY(0);
+            }
+
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .question-card.answered::before {
+                top: 10px;
+                right: 10px;
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            .notification {
+                transition: none;
+            }
+
+            .progress-fill::after {
+                animation: none;
+            }
+
+            .question-card,
+            .result-card {
+                transition: none;
+            }
+        }
+
+        /* High contrast mode improvements */
+        @media (prefers-contrast: high) {
+            .notification {
+                border: 2px solid currentColor;
+            }
+
+            .option:has(input:checked) {
+                border-width: 3px;
+            }
+
+            .question-card.answered::before {
+                border: 2px solid white;
+            }
+        }
+
+        /* Print styles for enhanced quiz */
+        @media print {
+            .notification,
+            .quiz-progress,
+            .question-card.answered::before {
+                display: none;
+            }
+
+            .summary-card {
+                background: white !important;
+                border: 2px solid #000;
+            }
+        }
+
+        /* Loading state for submit button */
+        .submit-btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .submit-btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff40;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Enhanced tooltip for hints */
+        .hint {
+            position: relative;
+        }
+
+        .hint::before {
+            content: "💡";
+            margin-right: 8px;
+        }
+
+        /* Smooth animations for state changes */
+        .question-card {
+            transition: border-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .option {
+            transition: all 0.3s ease;
+        }
+
+        .result-card {
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced focus styles for quiz elements */
+        .option:focus-within {
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+
+        .fill-blank:focus {
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+            border-color: #28a745;
+        }
+
+        /* Visual feedback for time spent */
+        .time-badge {
+            display: inline-block;
+            background: #17a2b8;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+    </style>
 </body>
 </html>
